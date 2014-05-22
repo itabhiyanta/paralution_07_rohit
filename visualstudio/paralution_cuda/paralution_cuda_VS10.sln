@@ -1,0 +1,25 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C++ Express 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "paralution_cuda", "paralution_cuda\paralution_cuda_VS10.vcxproj", "{C285A004-6B25-435C-8833-8D8DF980E424}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cg_VS10", "cg\cg_VS10.vcxproj", "{EDEC6E62-A722-49A7-B56D-B95443523A65}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C285A004-6B25-435C-8833-8D8DF980E424}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C285A004-6B25-435C-8833-8D8DF980E424}.Debug|Win32.Build.0 = Debug|Win32
+		{C285A004-6B25-435C-8833-8D8DF980E424}.Release|Win32.ActiveCfg = Release|Win32
+		{C285A004-6B25-435C-8833-8D8DF980E424}.Release|Win32.Build.0 = Release|Win32
+		{EDEC6E62-A722-49A7-B56D-B95443523A65}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EDEC6E62-A722-49A7-B56D-B95443523A65}.Debug|Win32.Build.0 = Debug|Win32
+		{EDEC6E62-A722-49A7-B56D-B95443523A65}.Release|Win32.ActiveCfg = Release|Win32
+		{EDEC6E62-A722-49A7-B56D-B95443523A65}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
