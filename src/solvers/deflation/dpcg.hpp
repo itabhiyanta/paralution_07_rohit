@@ -39,13 +39,18 @@ public:
   DPCG();
   virtual ~DPCG();
 
-  virtual void Print(void) const;
+   virtual void Print(void) const;
 
   virtual void Build(void);
   virtual void Clear(void);
 
-  virtual void SetNVectors(const int novecni);
-
+  virtual void SetNVectors(const int);
+  virtual void Setlvst_offst(const int);
+  virtual void SetZlssd(const int);
+  virtual void Setxdim(const int);
+  virtual void SetZ(LocalMatrix<ValueType> &Z);
+  virtual void MakeZLSSD(const int *bmap, const int);
+  virtual void MakeZ_CSR(void);
 protected:
   virtual void SolveNonPrecond_(const VectorType &rhs,
                                 VectorType *x);
@@ -62,7 +67,7 @@ protected:
 private:
 
   void MakeZ_COO(void);
-  void MakeZ_CSR(void);
+  
 
   OperatorType L_, LT_;
   OperatorType AZ_, ZT_;
@@ -72,12 +77,15 @@ private:
   VectorType r_, w_;
   VectorType p_, q_;
 
-  VectorType Dinv_;
+  VectorType Dinv_, Dinvhalf_;
   VectorType hat_, intmed_;
   VectorType Qb_, Ptx_;
   VectorType LLtx_, LLtx2_;
 
-  int novecni_;
+  int novecni_, zlssd_, xdim_;
+  int novecni_x_, novecni_y_, novecni_z_;
+  int ydim_, zdim_;
+  int val_lvst_offst_;
 };
 
 
