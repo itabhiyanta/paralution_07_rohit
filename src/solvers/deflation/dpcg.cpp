@@ -41,7 +41,9 @@
 
 #include <assert.h>
 #include <math.h>
-
+#include <fstream>
+#include <iomanip>
+using namespace std;
 namespace paralution {
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -113,16 +115,6 @@ void DPCG<OperatorType, VectorType, ValueType>::PrintEnd_(void) const {
 
 }
 
-template <class OperatorType, class VectorType, typename ValueType>
-void DPCG<OperatorType, VectorType, ValueType>::SetNVectors(const int novecni) {
-
-  LOG_DEBUG(this, "DPCG::SetNVectors()",
-            novecni);
-
-  assert(novecni > 0);
-  this->novecni_ = novecni;
-
-}
 
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::Setlvst_offst(const int val_lvst_offst) {
@@ -134,6 +126,8 @@ void DPCG<OperatorType, VectorType, ValueType>::Setlvst_offst(const int val_lvst
 
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::SetNVectors(const int novecni) {
+  LOG_DEBUG(this, "DPCG::SetNVectors()",
+            novecni);
 
   assert(novecni > 0);
   this->novecni_ = novecni;
@@ -213,7 +207,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
   }
   else{
     numvecs = novecni_*novecni_*novecni_ - 1;
-    part=nrows/(numvecs+1); 
+    part=nrow/(numvecs+1); 
     nnz_Zsd=nrow-part;
   }
   nrows= nrow;  ncols= numvecs;
@@ -267,7 +261,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   int domarea2d, domsize, numvecs, save_idx, rem_frm_w2;
   int nnz_w2=0, nnz_w1=0, col_ctr, nnz_orig, new_col_value;
   int *Zlssd_rows=NULL, *Zlssd_cols=NULL, maxcol_w1;
-  FILE *fp, *fp1;
+//  FILE *fp, *fp1;
   ValueType *Zsubd_vals=NULL, *Zlssd_vals=NULL;
   //cout<<"The non zeros in Z are "<<this->Z_.get_nnz()<<endl;
   nnz_orig=this->Z_.get_nnz();
@@ -643,7 +637,7 @@ void DPCG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const VectorTyp
   ValueType alpha, beta;
   ValueType rho, rho_old;
   ValueType res_norm = 0.0, b_norm = 1.0;
-  ValueType init_residual = 0.0;
+//  ValueType init_residual = 0.0;
   ValueType check_residual = 0.0;
 
   // initial residual = b - Ax
@@ -824,7 +818,7 @@ void DPCG<OperatorType, VectorType, ValueType>::SolvePrecond_(const VectorType &
   ValueType alpha, beta;
   ValueType rho, rho_old;
   ValueType res_norm = 0.0, b_norm = 1.0;
-  ValueType init_residual = 0.0;
+//   ValueType init_residual = 0.0;
   ValueType check_residual = 0.0;
   //std::cout<<"about to start preconditioned solve"<<endl;
   // initial residual = b - Ax

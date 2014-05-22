@@ -54,9 +54,9 @@ int makew1w2(int *bubmap, int *rowsZ, int *colsZ, int *rowsZ_w1, int *colsZ_w1, 
 	     int numvecs, int numbub, int procid)
 {
   int domsize, griddiminx, gridarea2d, domarea2d, didx_x, didx_y, didx_z, dom_idx_x, dom_idx_y, dom_idx_z;
-  int rowid, col_ctr, new_col_value, w2cols, nnzw1, nnzw2, w1cols, rem_frm_w2, i, j, k;
-  double dproduct; //FILE *fp;
-  double *complement_bmap; char name[20];
+  int rowid, col_ctr, new_col_value, w2cols, nnzw1, nnzw2, w1cols=0, rem_frm_w2, i, j, k;
+  double dproduct; //FILE *fp;char name[20];
+  double *complement_bmap; 
   complement_bmap=(double*)calloc(dim,sizeof(double));
   nnzw2=0;
   /// Now make levelset(bubmap) vector for subdomains(bubble only). Inverse of that is levelset(bubmap) matrix for(no bubbles).
@@ -140,8 +140,7 @@ fclose(fp);  */
 int bubmap_create(const double *phi, int *bubmap, const int xdim, const int ydim, const int zdim, 
 		  const int dim, int *maxbmap, const int lvst_offst){
   
-  //FILE *fp;
-  int i;
+  //FILE *fp;  int i;
   makebubmap(xdim, ydim, zdim, dim, phi, bubmap, 0, lvst_offst);
   *maxbmap=fixbubmap(bubmap, xdim, dim);
   //printf("\n maxbmap is %d",*maxbmap);
@@ -158,9 +157,9 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 	       const double *phi, int *bubmap, const int extension, const int lvst_offst)
 {
     int i,j,k, Xcord, Ycord, Zcord, left, right, top, bottom, leftface, rightface;
-    int decide, storectr, *store, index;
+    int decide;//, storectr, *store, index;
     int phin_x, phin_y, phin_z;
-    int *submap; char name[20];	//FILE *fp;
+    int *submap; //char name[20];	FILE *fp;
     double *phimap;
     submap	=(int*)calloc(dim,sizeof(int));
     phimap	=(double*)calloc(dim,sizeof(double));
@@ -279,7 +278,7 @@ int instore(int *store, int val, int *index, int sizeofstore)//linear search of 
   
 int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 {
-  int i, storectr, index, *store; char name[20], maxbmap;
+  int i, storectr, index, *store; char maxbmap;//name[20], 
   store=(int*)calloc(maxnumbubs,sizeof(int));
   //memset(store,0,sizeof(int)*maxnumbubs);//setting to zeros
   for(i=0;i<maxnumbubs;i++)
@@ -319,7 +318,7 @@ fclose(fp);  */
 int calclvlstval(int left, int bottom, int leftface, int inj, double *phimap, int *bubmap, int i, int decide, int dim)
 {
   int *valarray;
-  int minval, retval;  
+  int minval, retval=0;  
   valarray= (int*)calloc(3,sizeof(int));
   valarray[0]=9999999; valarray[1]=9999999;valarray[2]=9999999;
   if ( (left>=0) && (left<dim))
