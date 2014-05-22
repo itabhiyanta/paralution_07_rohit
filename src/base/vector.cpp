@@ -208,6 +208,51 @@ void Vector<ValueType>::PointWiseMult(const GlobalVector<ValueType> &x, const Lo
 }
 
 template <typename ValueType>
+void Vector<ValueType>::multiply_with_R(LocalVector<ValueType> &x, const int m) {
+
+  LOG_INFO("Vector<ValueType>::multiply_with_R(LocalVector<ValueType> &x, const int m)");
+  LOG_INFO("Mismatched types:");
+  this->info();
+  x.info();
+  FATAL_ERROR(__FILE__, __LINE__);
+
+}
+
+template <typename ValueType>
+void Vector<ValueType>::multiply_with_R(GlobalVector<ValueType> &x, const int m) {
+
+  LOG_INFO("Vector<ValueType>::multiply_with_R(GlobalVector<ValueType> &x,const int m)");
+  LOG_INFO("Mismatched types:");
+  this->info();
+  x.info();
+  FATAL_ERROR(__FILE__, __LINE__);
+
+}
+
+
+template <typename ValueType>
+void Vector<ValueType>::multiply_with_Rt(LocalVector<ValueType> &x, const ValueType alpha) {
+
+  LOG_INFO("Vector<ValueType>::multiply_with_Rt(LocalVector<ValueType> &x, const ValueType alpha)");
+  LOG_INFO("Mismatched types:");
+  this->info();
+  x.info();
+  FATAL_ERROR(__FILE__, __LINE__);
+
+}
+
+template <typename ValueType>
+void Vector<ValueType>::multiply_with_Rt(GlobalVector<ValueType> &x, const ValueType alpha) {
+
+  LOG_INFO("Vector<ValueType>::multiply_with_Rt(GlobalVector<ValueType> &x,const ValueType alpha)");
+  LOG_INFO("Mismatched types:");
+  this->info();
+  x.info();
+  FATAL_ERROR(__FILE__, __LINE__);
+
+}
+
+template <typename ValueType>
 void Vector<ValueType>::ScaleAddScale(const ValueType alpha, const LocalVector<ValueType> &x, const ValueType beta) {
 
   LOG_INFO("ScaleAddScale(const ValueType alpha, const LocalVector<ValueType> &x, const ValueType beta)");

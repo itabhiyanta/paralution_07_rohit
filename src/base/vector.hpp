@@ -99,6 +99,16 @@ public:
   /// Perform vector update of type this = alpha*this + x
   virtual void ScaleAdd(const ValueType alpha, const GlobalVector<ValueType> &x);
 
+  
+  virtual void multiply_with_R(LocalVector<ValueType> &x, const int m);
+  
+  virtual void multiply_with_R(GlobalVector<ValueType> &x, const int m);
+  
+  
+  virtual void multiply_with_Rt(LocalVector<ValueType> &x, const ValueType alpha);
+  
+  virtual void multiply_with_Rt(GlobalVector<ValueType> &x, const ValueType alpha);
+  
   /// Perform vector update of type this = alpha*this + x*beta
   virtual void ScaleAddScale(const ValueType alpha, const LocalVector<ValueType> &x, 
                              const ValueType beta);

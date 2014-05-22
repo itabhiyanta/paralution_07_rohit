@@ -646,7 +646,37 @@ void LocalVector<ValueType>::ScaleAdd(const ValueType alpha, const LocalVector<V
   }
 
 }
- 
+
+template <typename ValueType>
+void LocalVector<ValueType>::multiply_with_R(LocalVector<ValueType> &x, const int alpha) {
+
+  assert(this->get_size() == x.get_size()*alpha);
+
+  if (this->get_size() > 0 ) {
+  
+    assert( ( (this->vector_ == this->vector_host_)  && (x.vector_ == x.vector_host_)) ||
+            ( (this->vector_ == this->vector_accel_) && (x.vector_ == x.vector_accel_)) );
+    
+    this->vector_->multiply_with_R(*x.vector_, alpha);
+  }
+
+}
+
+template <typename ValueType>
+void LocalVector<ValueType>::multiply_with_Rt(LocalVector<ValueType> &x, const int alpha) {
+
+  assert(this->get_size() == x.get_size()/alpha);
+
+  if (this->get_size() > 0 ) {
+  
+    assert( ( (this->vector_ == this->vector_host_)  && (x.vector_ == x.vector_host_)) ||
+            ( (this->vector_ == this->vector_accel_) && (x.vector_ == x.vector_accel_)) );
+    
+    this->vector_->multiply_with_Rt(*x.vector_, alpha);
+  }
+
+}
+
 template <typename ValueType>
 void LocalVector<ValueType>::ScaleAddScale(const ValueType alpha, const LocalVector<ValueType> &x, const ValueType beta) {
 

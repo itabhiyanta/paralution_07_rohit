@@ -131,6 +131,14 @@ void GlobalVector<ValueType>::AddScale(const GlobalVector<ValueType> &x, const V
 }
 
 template <typename ValueType>
+void GlobalVector<ValueType>::multiply_with_R(GlobalVector<ValueType> &x, const int alpha) {
+}
+template <typename ValueType>
+void GlobalVector<ValueType>::multiply_with_Rt(GlobalVector<ValueType> &x, const int alpha) {
+}
+
+
+template <typename ValueType>
 void GlobalVector<ValueType>::ScaleAdd(const ValueType alpha, const GlobalVector<ValueType> &x) {
 }
 
