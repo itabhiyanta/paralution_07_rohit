@@ -541,6 +541,42 @@ void HostVector<ValueType>::ScaleAdd(const ValueType alpha, const BaseVector<Val
 }
 
 template <typename ValueType>
+void HostVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, const int m) {
+
+  assert(this->get_size() == x.get_size()*m);
+
+  HostVector<ValueType> *cast_x = dynamic_cast< HostVector<ValueType>*> (&x);
+  assert(cast_x != NULL);
+
+  omp_set_num_threads(this->local_backend_.OpenMP_threads);
+
+#pragma omp parallel for 
+  for (int i=0; i<this->size_/m; ++i)
+  // outvecR[i]=invecR[i*m];
+    cast_x->vec_[i]=this->vec_[i*m];
+
+}
+template <typename ValueType>
+void HostVector<ValueType>::multiply_with_Rt(BaseVector<ValueType> &x, const int m) {
+
+  assert(this->get_size() == x.get_size()/m);
+
+  HostVector<ValueType> *cast_x = dynamic_cast<HostVector<ValueType>*> (&x);
+  assert(cast_x != NULL);
+
+  omp_set_num_threads(this->local_backend_.OpenMP_threads);
+
+#pragma omp parallel for 
+  for (int i=0; i<this->size_*m; ++i)
+  if(i%m==0)
+	// outvecRt[i]=invecRt[i/m];
+	cast_x->vec_[i]=this->vec_[i/m];
+  else
+    cast_x->vec_[i]=(ValueType) 0.0;
+
+}
+
+template <typename ValueType>
 void HostVector<ValueType>::ScaleAddScale(const ValueType alpha, const BaseVector<ValueType> &x, const ValueType beta) {
 
   assert(&x != NULL);

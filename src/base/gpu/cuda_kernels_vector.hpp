@@ -40,6 +40,25 @@ __global__ void kernel_scaleadd(const IndexType n, const ValueType alpha, const 
 }
 
 template <typename ValueType, typename IndexType>
+__global__ void kernel_multiply_with_R(const IndexType n, const int m,  ValueType *out, ValueType *in) {
+
+  IndexType ind = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (ind < n)
+    out[ind]=in[ind*m];
+
+}
+template <typename ValueType, typename IndexType>
+__global__ void kernel_multiply_with_Rt(const IndexType n, const int m, ValueType *out, ValueType *in) {
+
+  IndexType ind = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (ind < n)
+    ind%m==0?out[ind]=in[ind/m]:out[ind]=(ValueType)0.0f;//outvec[ind]=invec[ind*m];
+
+}
+
+template <typename ValueType, typename IndexType>
 __global__ void kernel_scaleaddscale(const IndexType n, const ValueType alpha, const ValueType beta,
                                      const ValueType *x, ValueType *out) {
 

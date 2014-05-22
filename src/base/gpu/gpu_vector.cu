@@ -620,6 +620,56 @@ void GPUAcceleratorVector<ValueType>::ScaleAdd(const ValueType alpha, const Base
 
 }
 
+
+
+template <typename ValueType>
+void GPUAcceleratorVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, const int m) {
+
+  if (this->get_size() > 0) {
+
+    assert(this->get_size() == x.get_size()*m);
+    
+    GPUAcceleratorVector<ValueType> *cast_x = dynamic_cast< GPUAcceleratorVector<ValueType>*> (&x);
+    assert(cast_x != NULL);
+
+    int size = this->get_size();
+    dim3 BlockSize(this->local_backend_.GPU_block_size);
+    dim3 GridSize(size / this->local_backend_.GPU_block_size + 1);
+    
+    cudaDeviceSynchronize();
+
+    kernel_multiply_with_R<ValueType, int> <<<GridSize, BlockSize>>> (size, m, cast_x->vec_, this->vec_);
+    
+    CHECK_CUDA_ERROR(__FILE__, __LINE__);      
+
+  }
+
+}
+
+template <typename ValueType>
+void GPUAcceleratorVector<ValueType>::multiply_with_Rt( BaseVector<ValueType> &x, const int m) {
+
+  if (this->get_size() > 0) {
+
+    assert(this->get_size() == x.get_size()/m);
+    
+     GPUAcceleratorVector<ValueType> *cast_x = dynamic_cast< GPUAcceleratorVector<ValueType>*> (&x);
+    assert(cast_x != NULL);
+
+    int size = x.get_size(); // calling for the size of the output vector
+    dim3 BlockSize(this->local_backend_.GPU_block_size);
+    dim3 GridSize(size / this->local_backend_.GPU_block_size + 1);
+    
+    cudaDeviceSynchronize();
+
+    kernel_multiply_with_Rt<ValueType, int> <<<GridSize, BlockSize>>> (size, m, cast_x->vec_, this->vec_);
+    
+    CHECK_CUDA_ERROR(__FILE__, __LINE__);      
+
+  }
+
+}
+
 template <typename ValueType>
 void GPUAcceleratorVector<ValueType>::ScaleAddScale(const ValueType alpha, const BaseVector<ValueType> &x, const ValueType beta) {
 
