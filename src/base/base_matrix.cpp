@@ -261,6 +261,12 @@ bool BaseMatrix<ValueType>::ExtractInverseDiagonal(BaseVector<ValueType> *vec_in
 }
 
 template <typename ValueType>
+bool BaseMatrix<ValueType>::ExtractInverseDiagonal_sqrt(BaseVector<ValueType> *vec_inv_diag, int power) const {
+  return false;
+}
+
+
+template <typename ValueType>
 bool BaseMatrix<ValueType>::ExtractSubMatrix(const int row_offset,
                                              const int col_offset,
                                              const int row_size,
@@ -690,6 +696,11 @@ void BaseMatrix<ValueType>::SPAI(void) {
 
 template <typename ValueType>
 bool BaseMatrix<ValueType>::DiagonalMatrixMult(const BaseVector<ValueType> &diag) {
+  return false;
+}
+
+template <typename ValueType>
+bool BaseMatrix<ValueType>::DiagonalMatrixMult_fromL(const BaseVector<ValueType> &diag) {
   return false;
 }
 

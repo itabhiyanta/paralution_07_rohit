@@ -748,6 +748,32 @@ bool HostMatrixCSR<ValueType>::ExtractInverseDiagonal(BaseVector<ValueType> *vec
 }
 
 template <typename ValueType>
+bool HostMatrixCSR<ValueType>::ExtractInverseDiagonal_sqrt(BaseVector<ValueType> *vec_inv_diag, int power) const {
+
+  assert(vec_inv_diag != NULL);
+  assert(vec_inv_diag->get_size() == this->get_nrow());
+
+  HostVector<ValueType> *cast_vec_inv_diag  = dynamic_cast<HostVector<ValueType>*> (vec_inv_diag) ; 
+
+  omp_set_num_threads(this->local_backend_.OpenMP_threads);  
+
+#pragma omp parallel for
+  for (int ai=0; ai<this->get_nrow(); ++ai)
+    for (int aj=this->mat_.row_offset[ai]; aj<this->mat_.row_offset[ai+1]; ++aj) {
+      
+      if (ai == this->mat_.col[aj]) {
+        
+        cast_vec_inv_diag->vec_[ai] = (ValueType) pow((ValueType)sqrt(this->mat_.val[aj]),power);
+        break;
+        
+      }
+      
+    }
+  
+  return true;
+}
+
+template <typename ValueType>
 bool HostMatrixCSR<ValueType>::ExtractSubMatrix(const int row_offset,
                                                 const int col_offset,
                                                 const int row_size,
@@ -2688,6 +2714,25 @@ bool HostMatrixCSR<ValueType>::DiagonalMatrixMult(const BaseVector<ValueType> &d
 
 }
 
+template <typename ValueType>
+bool HostMatrixCSR<ValueType>::DiagonalMatrixMult_fromL(const BaseVector<ValueType> &diag) {
+
+  assert(diag.get_size() == this->get_ncol());
+
+  const HostVector<ValueType> *cast_diag = dynamic_cast<const HostVector<ValueType>*> (&diag) ; 
+  assert(cast_diag!= NULL);
+
+  omp_set_num_threads(this->local_backend_.OpenMP_threads);  
+
+#pragma omp parallel for
+  for (int ai=0; ai<this->get_nrow(); ++ai) {
+    for (int aj=this->mat_.row_offset[ai]; aj<this->mat_.row_offset[ai+1]; ++aj)
+      this->mat_.val[aj] *= cast_diag->vec_[ai];// scaling matrix rows by the diagonal
+  }
+    
+  return true;
+
+}
 template <typename ValueType>
 bool HostMatrixCSR<ValueType>::Compress(const ValueType drop_off) {
 

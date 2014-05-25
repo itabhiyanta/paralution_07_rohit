@@ -215,6 +215,10 @@ public:
   virtual bool ExtractDiagonal(BaseVector<ValueType> *vec_diag) const;
   /// Extract the inverse (reciprocal) diagonal values of the matrix into a LocalVector
   virtual bool ExtractInverseDiagonal(BaseVector<ValueType> *vec_inv_diag) const;
+  
+  /// Extract the inverse(or non-inverse) (reciprocal) diagonal (sqrtd) values of the matrix into a LocalVector
+  virtual bool ExtractInverseDiagonal_sqrt(BaseVector<ValueType> *vec_inv_diag, int power) const;
+  
   /// Extract the upper triangular matrix
   virtual bool ExtractU(BaseMatrix<ValueType> *U) const;
   /// Extract the upper triangular matrix including diagonal
@@ -307,6 +311,11 @@ public:
   /// Multiply the matrix with diagonal matrix (stored in LocalVector), 
   /// this=this*diag
   virtual bool DiagonalMatrixMult(const BaseVector<ValueType> &diag);
+  
+  /// Multiply the matrix with diagonal matrix (stored in LocalVector) on the left, 
+  /// this=diag*this
+  virtual bool DiagonalMatrixMult_fromL(const BaseVector<ValueType> &diag);
+  
   /// Perform matrix addition, this = alpha*this + beta*mat; 
   /// if structure==false the structure of the matrix is not changed, 
   /// if structure==true new data structure is computed

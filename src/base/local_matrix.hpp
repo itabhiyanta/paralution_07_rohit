@@ -147,6 +147,9 @@ public:
   /// Extract the inverse (reciprocal) diagonal values of the matrix into a LocalVector
   void ExtractInverseDiagonal(LocalVector<ValueType> *vec_inv_diag) const;
 
+  /// Extract the inverse (or non) (reciprocal) diagonal values (sqrtd) of the matrix into a LocalVector
+  void ExtractInverseDiagonal_sqrt(LocalVector<ValueType> *vec_inv_diag, int power) const;
+
   /// Extract the upper triangular matrix
   void ExtractU(LocalMatrix<ValueType> *U, const bool diag) const;
   /// Extract the lower triangular matrix
@@ -331,6 +334,8 @@ public:
   /// this=this*diag
   void DiagonalMatrixMult(const LocalVector<ValueType> &diag);
 
+  void DiagonalMatrixMult_fromL(const LocalVector<ValueType> &diag);	
+  
   /// Compute the spectrum approximation with Gershgorin circles theorem
   void Gershgorin(ValueType &lambda_min,
                   ValueType &lambda_max) const;

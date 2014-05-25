@@ -2351,6 +2351,34 @@ bool GPUAcceleratorMatrixCSR<ValueType>::ExtractInverseDiagonal(BaseVector<Value
 }
 
 template <typename ValueType>
+bool GPUAcceleratorMatrixCSR<ValueType>::ExtractInverseDiagonal_sqrt(BaseVector<ValueType> *vec_inv_diag, int power) const { 
+
+  if (this->get_nnz() > 0)  {
+
+    assert(vec_inv_diag != NULL);
+    assert(vec_inv_diag->get_size() == this->get_nrow());
+    
+    GPUAcceleratorVector<ValueType> *cast_vec_inv_diag  = dynamic_cast<GPUAcceleratorVector<ValueType>*> (vec_inv_diag) ; 
+
+    int nrow = this->get_nrow();
+    dim3 BlockSize(this->local_backend_.GPU_block_size);
+    dim3 GridSize(nrow / this->local_backend_.GPU_block_size + 1);
+    
+    //    threads sync should not be needed
+    //    cudaDeviceSynchronize();
+    
+    kernel_csr_extract_inv_diag_sqrt<ValueType, int> <<<GridSize, BlockSize>>> (nrow, this->mat_.row_offset, this->mat_.col, this->mat_.val,
+                                                                       cast_vec_inv_diag->vec_, power);
+    
+    CHECK_CUDA_ERROR(__FILE__, __LINE__);      
+
+
+  }
+
+  return true;
+}
+
+template <typename ValueType>
 bool GPUAcceleratorMatrixCSR<ValueType>::ExtractSubMatrix(const int row_offset,
                                                           const int col_offset,
                                                           const int row_size,
@@ -3042,6 +3070,32 @@ bool GPUAcceleratorMatrixCSR<ValueType>::DiagonalMatrixMult(const BaseVector<Val
   return true;  
 }
 
+
+template <typename ValueType>
+bool GPUAcceleratorMatrixCSR<ValueType>::DiagonalMatrixMult_fromL(const BaseVector<ValueType> &diag) {
+
+  assert(diag.get_size() == this->get_ncol());
+  
+  const GPUAcceleratorVector<ValueType> *cast_diag = dynamic_cast<const GPUAcceleratorVector<ValueType>*> (&diag) ; 
+  assert(cast_diag!= NULL);
+
+  if (this->get_nnz() > 0) {
+
+    int nrow = this->get_nrow();
+    dim3 BlockSize(this->local_backend_.GPU_block_size);
+    dim3 GridSize(nrow / this->local_backend_.GPU_block_size + 1);
+    
+    cudaDeviceSynchronize();
+
+    kernel_csr_diagmatmult_fromL<ValueType, int> <<<GridSize, BlockSize>>> (nrow, this->mat_.row_offset, this->mat_.col, 
+                                                                      cast_diag->vec_, this->mat_.val);
+    
+    CHECK_CUDA_ERROR(__FILE__, __LINE__);      
+
+  }
+
+  return true;  
+}
 
 template <typename ValueType>
 void GPUAcceleratorMatrixCSR<ValueType>::SymbolicPower(const int p) {

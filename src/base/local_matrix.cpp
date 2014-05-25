@@ -1372,6 +1372,50 @@ void LocalMatrix<ValueType>::ExtractInverseDiagonal(LocalVector<ValueType> *vec_
 }
 
 template <typename ValueType>
+void LocalMatrix<ValueType>::ExtractInverseDiagonal_sqrt(LocalVector<ValueType> *vec_inv_diag, int power) const {
+
+  assert(vec_inv_diag != NULL);
+
+  if (this->get_nnz() > 0) {
+
+    assert( ( (this->matrix_ == this->matrix_host_)  && (vec_inv_diag->vector_ == vec_inv_diag->vector_host_)) ||
+            ( (this->matrix_ == this->matrix_accel_) && (vec_inv_diag->vector_ == vec_inv_diag->vector_accel_) ) );
+    
+    std::string vec_inv_diag_name = "Inverse of the diagonal elements of " + this->object_name_;
+    vec_inv_diag->Allocate(vec_inv_diag_name, std::min(this->get_nrow(), this->get_ncol()));
+    
+    bool err = this->matrix_->ExtractInverseDiagonal_sqrt(vec_inv_diag->vector_, power);
+    
+    if ((err == false) && (this->is_host() == true)) {
+      LOG_INFO("Computation of LocalMatrix::ExtractInverseDiagonal_sqrt() fail");
+      this->info();
+      FATAL_ERROR(__FILE__, __LINE__);    
+    }
+    
+    
+    if (err == false) {
+      
+      LocalMatrix<ValueType> tmp_mat;
+      tmp_mat.CloneFrom(*this);
+      
+      tmp_mat.MoveToHost();
+      vec_inv_diag->MoveToHost();
+      
+      if (tmp_mat.matrix_->ExtractInverseDiagonal_sqrt(vec_inv_diag->vector_, power) == false) {
+        LOG_INFO("Computation of LocalMatrix::ExtractInverseDiagonal_sqrt() fail");
+        this->info();
+        FATAL_ERROR(__FILE__, __LINE__);
+      }
+      
+      LOG_VERBOSE_INFO(2, "*** warning: LocalMatrix::ExtractInverseDiagonal_sqrt() is performed on the host");
+      
+      vec_inv_diag->MoveToAccelerator();
+      
+    }  
+  }
+}
+
+template <typename ValueType>
 void LocalMatrix<ValueType>::ExtractSubMatrix(const int row_offset,
                                               const int col_offset,
                                               const int row_size,
@@ -2971,6 +3015,54 @@ void LocalMatrix<ValueType>::DiagonalMatrixMult(const LocalVector<ValueType> &di
 
 }
   
+  
+
+template <typename ValueType>
+void LocalMatrix<ValueType>::DiagonalMatrixMult_fromL(const LocalVector<ValueType> &diag) {
+
+  assert(&diag != NULL);
+
+  assert( ( (this->matrix_ == this->matrix_host_)  && (diag.vector_ == diag.vector_host_)) ||
+          ( (this->matrix_ == this->matrix_accel_) && (diag.vector_ == diag.vector_accel_) ) );
+
+  if (this->get_nnz() > 0) {
+
+    assert((diag.get_size() == this->get_nrow()) ||
+           (diag.get_size() == this->get_ncol()));
+
+    bool err = this->matrix_->DiagonalMatrixMult_fromL(*diag.vector_);
+    
+    if ((err == false) && (this->is_host() == true)) {
+      LOG_INFO("Computation of LocalMatrix::MatMatMult (diagfromL)() fail");
+      this->info();
+      FATAL_ERROR(__FILE__, __LINE__);    
+    }
+    
+    
+    if (err == false) {
+      
+      LocalVector<ValueType> tmp_vec;
+      tmp_vec.CloneFrom(diag);
+      
+      tmp_vec.MoveToHost();
+      this->MoveToHost();
+      
+      if (this->matrix_->DiagonalMatrixMult_fromL(*tmp_vec.vector_) ==  false) {
+        
+        LOG_INFO("Computation of LocalMatrix::MatMatMult (diagfromL)() fail");
+        this->info();
+        FATAL_ERROR(__FILE__, __LINE__);
+      }
+      
+      LOG_VERBOSE_INFO(2, "*** warning: LocalMatrix::MatMatMult (diagfromL)() is performed on the host");
+      
+      this->MoveToAccelerator();
+      
+    }  
+  }
+
+}  
+
 template <typename ValueType>
 void LocalMatrix<ValueType>::Compress(const ValueType drop_off) {
 

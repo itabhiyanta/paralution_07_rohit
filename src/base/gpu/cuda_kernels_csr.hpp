@@ -183,6 +183,23 @@ __global__ void kernel_csr_extract_inv_diag(const IndexType nrow, const IndexTyp
 }
 
 template <typename ValueType, typename IndexType>
+__global__ void kernel_csr_extract_inv_diag_sqrt(const IndexType nrow, const IndexType *row_offset,
+                                            const IndexType *col, const ValueType *val, ValueType *vec, int power) {
+
+  IndexType ai = blockIdx.x*blockDim.x+threadIdx.x;
+  IndexType aj;
+
+  if (ai <nrow) {
+
+    for (aj=row_offset[ai]; aj<row_offset[ai+1]; ++aj)
+      if (ai == col[aj])
+        vec[ai] = (ValueType)pow(val[aj],power);//(1) / val[aj];
+
+  }
+
+}
+
+template <typename ValueType, typename IndexType>
 __global__ void kernel_csr_extract_submatrix_row_nnz(const IndexType *row_offset, const IndexType *col, const ValueType *val,
                                                      const IndexType smrow_offset, const IndexType smcol_offset, 
                                                      const IndexType smrow_size, const IndexType smcol_size,
@@ -258,6 +275,24 @@ __global__ void kernel_csr_diagmatmult(const IndexType nrow, const IndexType *ro
 
     for (aj=row_offset[ai]; aj<row_offset[ai+1]; ++aj) {
       val[aj] *= diag[ col[aj] ] ; 
+    }
+
+  }
+}
+
+template <typename ValueType, typename IndexType>
+__global__ void kernel_csr_diagmatmult_fromL(const IndexType nrow, const IndexType *row_offset, 
+                                       const IndexType *col, 
+                                       const ValueType *diag, 
+                                       ValueType *val) {
+
+  IndexType ai = blockIdx.x*blockDim.x+threadIdx.x;
+  IndexType aj;
+
+  if (ai <nrow) {
+
+    for (aj=row_offset[ai]; aj<row_offset[ai+1]; ++aj) {
+      val[aj] *= diag[ ai ] ; //scaling matrix rows by entries of the diagonal
     }
 
   }

@@ -83,6 +83,7 @@ public:
 
   virtual bool ExtractDiagonal(BaseVector<ValueType> *vec_diag) const;
   virtual bool ExtractInverseDiagonal(BaseVector<ValueType> *vec_inv_diag) const;
+  virtual bool ExtractInverseDiagonal_sqrt(BaseVector<ValueType> *vec_inv_diag, int power) const;
   virtual bool ExtractU(BaseMatrix<ValueType> *U) const;
   virtual bool ExtractUDiagonal(BaseMatrix<ValueType> *U) const;
   virtual bool ExtractL(BaseMatrix<ValueType> *L) const;
@@ -107,6 +108,7 @@ public:
   virtual void NumericMatMatMult(const BaseMatrix<ValueType> &A, const BaseMatrix<ValueType> &B);
 
   virtual bool DiagonalMatrixMult(const BaseVector<ValueType> &diag);
+  virtual bool DiagonalMatrixMult_fromL(const BaseVector<ValueType> &diag);
 
   virtual bool MatrixAdd(const BaseMatrix<ValueType> &mat, const ValueType alpha, 
                          const ValueType beta, const bool structure);
