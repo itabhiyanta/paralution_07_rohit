@@ -134,6 +134,7 @@ install: all
 	cp examples/block-precond ../build/bin/
 	cp examples/idr ../build/bin/
 	cp examples/dpcg ../build/bin/
+	cp examples/dpcg_precon ../build/bin/
 	cp examples/simple-spmv ../build/bin/
 	cp examples/async ../build/bin/
 	cp examples/assembly ../build/bin/
@@ -144,7 +145,7 @@ install: all
 	find . -name '*.hpp' | cpio -pavd ../build/inc/
 	cp -rf plug-ins/OpenFOAM ../build/inc/plug-ins/
 
-all: 	lib cg bicgstab gmres idr dpcg block-precond sp-precond direct assembly assembly2 as-precond fixed-point benchmark power-method me-preconditioner simple-spmv async mixed-precision amg cg-amg
+all: 	lib cg bicgstab gmres idr dpcg dpcg_precon block-precond sp-precond direct assembly assembly2 as-precond fixed-point benchmark power-method me-preconditioner simple-spmv async mixed-precision amg cg-amg
 
 ocl_dir:
 	echo -n "#define kernelPath \"">  utils/paths.h
@@ -167,7 +168,7 @@ lib: 	$(OCL_CHECKER) $(OBJ)
 
 
 clean: 
-	rm -rf *.a *.o utils/ocl_write_kernels utils/ocl_check_hw examples/as-precond examples/amg examples/cg-amg examples/benchmark examples/mixed-precision examples/power-method examples/simple-spmv examples/async examples/me-preconditioner examples/cg examples/bicgstab examples/gmres examples/sp-precond examples/assembly examples/assembly2 examples/direct example/as-precond examples/block-precond examples/idr examples/dpcg examples/fixed-point examples/*.o examples/fortran/*.o examples/fortran/paralution_solver tmp/*.o base/*.o base/host/*.o base/gpu/*.o base/ocl/*.o base/mic/*.o solvers/direct/*.o solvers/krylov/*.o solvers/multigrid/*.o solvers/*.o solvers/preconditioners/*.o solvers/deflation/*.o utils/*.o *.mtx *.vec *.dat examples/*.mtx examples/*.vec examples/*.dat ../thirdparty/matrix-market/*.o ../build/* ../doc/latex ../doc/html utils/ocl_check_hw utils/gpu_check_hw utils/paths.h utils/HardwareParameters.hpp utils/ocl_kernels_general.hpp libparalution.so $(PARALUTION_LIB)
+	rm -rf *.a *.o utils/ocl_write_kernels utils/ocl_check_hw examples/as-precond examples/amg examples/cg-amg examples/benchmark examples/mixed-precision examples/power-method examples/simple-spmv examples/async examples/me-preconditioner examples/cg examples/bicgstab examples/gmres examples/sp-precond examples/assembly examples/assembly2 examples/direct example/as-precond examples/block-precond examples/idr examples/dpcg examples/dpcg_precon examples/fixed-point examples/*.o examples/fortran/*.o examples/fortran/paralution_solver tmp/*.o base/*.o base/host/*.o base/gpu/*.o base/ocl/*.o base/mic/*.o solvers/direct/*.o solvers/krylov/*.o solvers/multigrid/*.o solvers/*.o solvers/preconditioners/*.o solvers/deflation/*.o utils/*.o *.mtx *.vec *.dat examples/*.mtx examples/*.vec examples/*.dat ../thirdparty/matrix-market/*.o ../build/* ../doc/latex ../doc/html utils/ocl_check_hw utils/gpu_check_hw utils/paths.h utils/HardwareParameters.hpp utils/ocl_kernels_general.hpp libparalution.so $(PARALUTION_LIB)
 
 #
 # general
@@ -535,6 +536,12 @@ examples/dpcg.o: examples/dpcg.cpp
 dpcg: examples/dpcg.o
 	$(CC) -o examples/dpcg examples/dpcg.o $(PARALUTION_LIB) $(LFLAGS)
 
+examples/dpcg_precon.o: examples/dpcg_precon.cpp
+	$(CC) $(CFLAGS) $(PARALUTION_INC) -c examples/dpcg_precon.cpp -o examples/dpcg_precon.o
+
+dpcg_precon: examples/dpcg_precon.o
+	$(CC) -o examples/dpcg_precon examples/dpcg_precon.o $(PARALUTION_LIB) $(LFLAGS)
+	
 examples/bicgstab.o: examples/bicgstab.cpp
 	$(CC) $(CFLAGS) $(PARALUTION_INC) -c examples/bicgstab.cpp -o examples/bicgstab.o
 

@@ -34,6 +34,7 @@ set(EXAMPLES
   cg-amg
   cmk
   dpcg
+  dpcg_precon
   idr
   gmres
   sp-precond
