@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -p gpu
+#SBATCH -t 00:50:00
+#SBATCH -J pdpcg_127_128_128_3_pm_1e6_cpu_neumann_azhyb_aldiag
+cd $HOME/ROHIT/babysteps/paralution-0.5.0/src/examples
+
+module load cuda/6.0
+module load mkl/11.0.2 c/intel/13.0.1
+module load bullxmpi/bullxmpi-1.2.4.1
+export PATH=/home/rohitg/ROHIT/babysteps/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/home/rohitg/ROHIT/babysteps/cuda/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/ROHIT/babysteps/paralution-0.5.0/build/lib
+
+srun ./dpcg ../../../convert_coo_to_mm/atry1_3.mtx ../../../convert_coo_to_mm/Z_3.mtx ../../../convert_coo_to_mm/r_3.dat 8
+
+
