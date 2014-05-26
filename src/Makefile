@@ -69,9 +69,9 @@ C = $(GC)
 CFLAGS = $(GCFLAGS)
 
 # Uncomment for CUDA GPU support
-#SUPPORT_CUDA =-DSUPPORT_CUDA
-#LCUDA=-lcudart -lcublas -lcusparse -L/cm/shared/apps/cuda55/toolkit/current/lib64
-#CUDA_OBJ = base/gpu/gpu_allocate_free.o  base/gpu/backend_gpu.o base/gpu/gpu_vector.o  base/gpu/gpu_matrix_csr.o base/gpu/gpu_matrix_coo.o base/gpu/gpu_matrix_dense.o base/gpu/gpu_matrix_mcsr.o base/gpu/gpu_matrix_bcsr.o base/gpu/gpu_matrix_dia.o base/gpu/gpu_matrix_ell.o base/gpu/gpu_matrix_hyb.o
+SUPPORT_CUDA =-DSUPPORT_CUDA
+LCUDA=-lcudart -lcublas -lcusparse -L/cm/shared/apps/cuda55/toolkit/current/lib64
+CUDA_OBJ = base/gpu/gpu_allocate_free.o  base/gpu/backend_gpu.o base/gpu/gpu_vector.o  base/gpu/gpu_matrix_csr.o base/gpu/gpu_matrix_coo.o base/gpu/gpu_matrix_dense.o base/gpu/gpu_matrix_mcsr.o base/gpu/gpu_matrix_bcsr.o base/gpu/gpu_matrix_dia.o base/gpu/gpu_matrix_ell.o base/gpu/gpu_matrix_hyb.o
 
 
 # Uncomment for OpenCL support

@@ -629,7 +629,7 @@ int main(int argc, char* argv[]) {
 
   ls.SetOperator(mat);
   ls.SetPreconditioner(p);
-  p.SetPrecondMatrixFormat(HYB);
+//   p.SetPrecondMatrixFormat(HYB);
   ls.Init(0.0, 1e-6, 1e8, 200000);
 #ifdef BUBFLO  
 //   ls.SetNVectors(4);
