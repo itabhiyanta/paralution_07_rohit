@@ -2,7 +2,7 @@
 #$ -pe openmpi 1 
 #$ -l h_rt=2:15:00
 #$ -l fat,gpu=K20
-#$ -N pdpcg_ongpu_guus1e7_16_meiluilu01_1e6_hybprecon
+#$ -N pdpcg_ongpu_guus1e7_16_meiluilu01_1e6
 #$ -cwd
 
 APP=./dpcg_precon
@@ -28,5 +28,5 @@ for host in `uniq $TMPDIR/machines`; do
 # Use regular ssh-based startup instead of OpenMPI/SGE native one
 unset PE_HOSTFILE
 PATH=/usr/bin:$PATH
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/ROHIT/babysteps/paralution-0.5.0/build/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/ROHIT/babysteps/paralution-0.7.0/build/lib
 $MPI_RUN -np $totcores --hostfile $HOSTFILE $APP $ARGS
