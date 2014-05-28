@@ -2,7 +2,7 @@
 #$ -pe openmpi 1 
 #$ -l h_rt=2:15:00
 #$ -l fat,gpu=K20
-#$ -N pdpcg_ongpu_guus1e7_16_meiluilu01_1e6
+#$ -N pdpcg_ongpu_guus1e3_16_mcsgs_ilup_1e6
 #$ -cwd
 
 APP=./dpcg_precon
@@ -11,7 +11,8 @@ APP=./dpcg_precon
 # ARGS="../../../convert_coo_to_mm/a_63_16_1e7.mtx ../../../convert_coo_to_mm/Z_63_16_1e7.mtx ../../../convert_coo_to_mm/r_63_16_1e7.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_shell_inv.mtx /var/scratch/rgupta/guus_data/Z_shell_inv.mtx /var/scratch/rgupta/guus_data/r_shell_inv.dat /var/scratch/rgupta/guus_data/sol_shell_inv.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_shell_norm.mtx /var/scratch/rgupta/guus_data/Z_shell_norm.mtx /var/scratch/rgupta/guus_data/r_shell_norm.dat /var/scratch/rgupta/guus_data/sol_shell_norm.dat 8"
-ARGS="/var/scratch/rgupta/guus_data/a_shell_norm1e7_16.mtx /var/scratch/rgupta/guus_data/Z_shell_norm1e7_16.mtx /var/scratch/rgupta/guus_data/r_shell_nrm1e7_16.dat /var/scratch/rgupta/guus_data/sol_shell_nrm1e7_16.dat 8"
+#ARGS="/var/scratch/rgupta/guus_data/a_shell_norm1e7_16.mtx /var/scratch/rgupta/guus_data/Z_shell_norm1e7_16.mtx /var/scratch/rgupta/guus_data/r_shell_nrm1e7_16.dat /var/scratch/rgupta/guus_data/sol_shell_nrm1e7_16.dat 8"
+ARGS="/var/scratch/rgupta/guus_data/a_shell_1e3_16.mtx /var/scratch/rgupta/guus_data/Z_shell_1e3_16.mtx /var/scratch/rgupta/guus_data/r_shell_1e3_16.dat /var/scratch/rgupta/guus_data/sol_shell_1e3_16.dat 8"
 # Get OpenMPI settings
 . /etc/bashrc
 module load openmpi/gcc

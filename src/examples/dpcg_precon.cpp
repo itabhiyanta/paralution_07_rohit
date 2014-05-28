@@ -116,97 +116,97 @@ int main(int argc, char* argv[]) {
 #endif
   
     /////////////////////////////////////////////////////////////////  
-//   std::cout << "-----------------------------------------------" << std::endl;
-//   std::cout << "DPCG solver MCSGS" << std::endl;
-// #ifdef GUUS
-//   rhs.ReadFileASCII(std::string(argv[3]));
-//   x.SetRandom(0.0,1.0,1000);
-//   ls.SetZ(Zin);
-// #endif
-//   
-// #ifdef BUBFLO  
-//   x.ReadFileASCII(std::string(argv[2]));
-//   rhs.ReadFileASCII(std::string(argv[3]));
-// #endif
-// 
-//   gettimeofday(&now, NULL);
-//   tick = now.tv_sec*1000000.0+(now.tv_usec);
-//   
-// #ifdef BUBFLO  
-//   if(setlssd){
-//     LocalVector<double> phi;
-//     LocalVector<int> bubmap;
-//     phi.Allocate("PHI", phisize);
-//     bubmap.Allocate("bubmap",mat.get_nrow());
-//     phi.ReadFileASCII(std::string(argv[4]));
-//     
-//     bubmap.LeaveDataPtr(&bubmap_ptr);
-//     phi.LeaveDataPtr(&phi_ptr);
-// 
-//     x.SetRandom(0.0,1.0,1000);
-//     bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
-//     phi.Clear();
-//     
-//   }
-//   ls.Setxdim(xdim);
-//   ls.SetNVectors(defvex_perdirec);
-//   ls.Setlvst_offst(lvst_offst);
-//   ls.SetZlssd(setlssd);
-//   mat.ConvertToCSR();  
-// #endif
-//   
-//   ls.SetOperator(mat);
-//   ls.SetPreconditioner (mcsgs_p) ;
-//   mcsgs_p.SetPrecondMatrixFormat(HYB);
-//   
-//  
-//   ls.Init(0.0, 1e-6, 1e8, 200000);
-// #ifdef BUBFLO  	
-//   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
-//   if(setlssd)
-//     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available	
-// #endif
-//     
-//   
-// 
-//   ls.Build();
-// #ifdef MATDIA  
-//   mat.ConvertToDIA();
-// #endif  
-//   gettimeofday(&now, NULL);
-//   tack = now.tv_sec*1000000.0+(now.tv_usec);
-//   b=(tack-tick)/1000000;
-//   std::cout << "Building:" << b << " sec" << std::endl;
-//   
-// 
-//   mat.info();
-// 
-//   gettimeofday(&now, NULL);
-//   tick = now.tv_sec*1000000.0+(now.tv_usec);
-// 
-//   ls.Solve(rhs, &x);
-// 
-//   gettimeofday(&now, NULL);
-//   tack = now.tv_sec*1000000.0+(now.tv_usec);
-//   s= (tack-tick)/1000000;
-//   std::cout << "Solver execution:" << s << " sec" << std::endl;
-//   std::cout << "Total execution:" << s+b << " sec" << std::endl;
-// #ifdef GUUS 
-//   x.MoveToHost();
-//   sol_norm=x.Norm();
-//   cout<<"\n Norm of Solution is "<<sol_norm<<endl;
-//   cout<<"\n Norm of Reference Solution is "<<refsol.Norm()<<endl;
-//   refones.AddScale(x,(double)-1.0f);
-//   x.AddScale(refsol,(double)-1.0f);
-//   
-//   
-//   diff_norm=x.Norm();
-//   ones_norm=refones.Norm();
-//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
-//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
-// #endif  
-//   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
-//   ls.Clear();
+   std::cout << "-----------------------------------------------" << std::endl;
+   std::cout << "DPCG solver MCSGS" << std::endl;
+ #ifdef GUUS
+   rhs.ReadFileASCII(std::string(argv[3]));
+   x.SetRandom(0.0,1.0,1000);
+   ls.SetZ(Zin);
+ #endif
+   
+ #ifdef BUBFLO  
+   x.ReadFileASCII(std::string(argv[2]));
+   rhs.ReadFileASCII(std::string(argv[3]));
+ #endif
+ 
+   gettimeofday(&now, NULL);
+   tick = now.tv_sec*1000000.0+(now.tv_usec);
+   
+ #ifdef BUBFLO  
+   if(setlssd){
+     LocalVector<double> phi;
+     LocalVector<int> bubmap;
+     phi.Allocate("PHI", phisize);
+     bubmap.Allocate("bubmap",mat.get_nrow());
+     phi.ReadFileASCII(std::string(argv[4]));
+     
+     bubmap.LeaveDataPtr(&bubmap_ptr);
+     phi.LeaveDataPtr(&phi_ptr);
+ 
+     x.SetRandom(0.0,1.0,1000);
+     bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
+     phi.Clear();
+     
+   }
+   ls.Setxdim(xdim);
+   ls.SetNVectors(defvex_perdirec);
+   ls.Setlvst_offst(lvst_offst);
+   ls.SetZlssd(setlssd);
+   mat.ConvertToCSR();  
+ #endif
+   
+   ls.SetOperator(mat);
+   ls.SetPreconditioner (mcsgs_p) ;
+   mcsgs_p.SetPrecondMatrixFormat(HYB);
+   
+  
+   ls.Init(0.0, 1e-6, 1e8, 200000);
+ #ifdef BUBFLO  	
+  ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
+   if(setlssd)
+     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available	
+ #endif
+     
+   
+ 
+   ls.Build();
+ #ifdef MATDIA  
+   mat.ConvertToDIA();
+ #endif  
+   gettimeofday(&now, NULL);
+   tack = now.tv_sec*1000000.0+(now.tv_usec);
+   b=(tack-tick)/1000000;
+  std::cout << "Building:" << b << " sec" << std::endl;
+   
+ 
+   mat.info();
+ 
+   gettimeofday(&now, NULL);
+   tick = now.tv_sec*1000000.0+(now.tv_usec);
+ 
+   ls.Solve(rhs, &x);
+ 
+   gettimeofday(&now, NULL);
+   tack = now.tv_sec*1000000.0+(now.tv_usec);
+   s= (tack-tick)/1000000;
+   std::cout << "Solver execution:" << s << " sec" << std::endl;
+   std::cout << "Total execution:" << s+b << " sec" << std::endl;
+ #ifdef GUUS 
+   x.MoveToHost();
+   sol_norm=x.Norm();
+   cout<<"\n Norm of Solution is "<<sol_norm<<endl;
+   cout<<"\n Norm of Reference Solution is "<<refsol.Norm()<<endl;
+   refones.AddScale(x,(double)-1.0f);
+   x.AddScale(refsol,(double)-1.0f);
+   
+   
+   diff_norm=x.Norm();
+   ones_norm=refones.Norm();
+   cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
+   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
+ #endif  
+   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
+  ls.Clear();
   /////////////////////////////////////////////////////////////////  
  
   /////////////////////////////////////////////////////////////////  
@@ -308,98 +308,105 @@ int main(int argc, char* argv[]) {
 // //   
   
 ///////////////////////////////////////////////////////////////  
-//   std::cout << "-----------------------------------------------" << std::endl;
-//   std::cout << "DPCG solver ILU-p" << std::endl;
-// #ifdef GUUS  
-//   rhs.ReadFileASCII(std::string(argv[3]));
-//   x.SetRandom(0.0,1.0,1000);
-//   ls.SetZ(Zin);
-// #endif
-//   
-// #ifdef BUBFLO  
-//    x.ReadFileASCII(std::string(argv[2]));
-//   rhs.ReadFileASCII(std::string(argv[3]));
-// #endif  
-//   
-//   gettimeofday(&now, NULL);
-//   tick = now.tv_sec*1000000.0+(now.tv_usec);
-//   
-// #ifdef BUBFLO
-//   if(setlssd){
-//     LocalVector<double> phi;
-//     LocalVector<int> bubmap;
-//     phi.Allocate("PHI", phisize);
-//     bubmap.Allocate("bubmap",mat.get_nrow());
-//     phi.ReadFileASCII(std::string(argv[4]));
-//     
-//     bubmap.LeaveDataPtr(&bubmap_ptr);
-//     phi.LeaveDataPtr(&phi_ptr);
-// 
-//     //x.SetRandom(0.0,1.0,1000);
-//     bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
-//     phi.Clear();
-//     
-//   }
-//   ls.Setxdim(xdim);
-//   ls.SetNVectors(defvex_perdirec);
-//   ls.SetZlssd(setlssd);
-//   mat.ConvertToCSR();  
-// #endif
-//   
-//   ilu_p.Init(0);
-//   ls.SetOperator(mat);
-//   ls.SetPreconditioner(ilu_p);
-//   ls.Init(0.0, 1e-6, 1e8, 20000);
-// 
-// #ifdef BUBFLO  
-//   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
-//   if(setlssd)
-//     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
-// #endif  
-//   
-//   ls.Build();
-// #ifdef MATDIA  
-//   mat.ConvertToDIA();
-// #endif  
-//   gettimeofday(&now, NULL);
-//   tack = now.tv_sec*1000000.0+(now.tv_usec);
-//   b=(tack-tick)/1000000;
-//   std::cout << "Building:" << b << " sec" << std::endl;
-//   
-//   ls.Verbose(2);
-// //   mat.info();
-// 
-//   gettimeofday(&now, NULL);
-//   tick = now.tv_sec*1000000.0+(now.tv_usec);
-//   
-//   ls.Solve(rhs, &x);
-// 
-//   gettimeofday(&now, NULL);
-//   tack = now.tv_sec*1000000.0+(now.tv_usec);
-//   s= (tack-tick)/1000000;
-//   std::cout << "Solver execution:" << s << " sec" << std::endl;
-//   std::cout << "Total execution:" << s+b << " sec" << std::endl;
-// 
-// #ifdef SCALIN
-//   x.PointWiseMult(Dinvhalf_min);
-// #endif
-//   x.MoveToHost();
-// //   x.WriteFileASCII("x_solution_shell_scal.rec");
-// #ifdef GUUS
-//   sol_norm=x.Norm();
-//   cout<<"\n Norm of Solution is "<<sol_norm<<endl;
-//   cout<<"\n Norm of Reference Solution is "<<refsol.Norm()<<endl;
-//   refones.AddScale(x,(double)-1.0f);
-//   x.AddScale(refsol,(double)-1.0f);
-//   
-//   x.MoveToHost();
-//   diff_norm=x.Norm();
-//   ones_norm=refones.Norm();
-//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
-//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
-// #endif  
-//   
-//   ls.Clear();
+  std::cout << "-----------------------------------------------" << std::endl;
+  std::cout << "DPCG solver ILU-p" << std::endl;
+  refones.Ones();
+#ifdef GUUS  
+  rhs.ReadFileASCII(std::string(argv[3]));
+  x.SetRandom(0.0,1.0,1000);
+  ls.SetZ(Zin);
+#endif
+  
+#ifdef BUBFLO  
+   x.ReadFileASCII(std::string(argv[2]));
+  rhs.ReadFileASCII(std::string(argv[3]));
+#endif  
+  
+  gettimeofday(&now, NULL);
+  tick = now.tv_sec*1000000.0+(now.tv_usec);
+  
+#ifdef BUBFLO
+  if(setlssd){
+    LocalVector<double> phi;
+    LocalVector<int> bubmap;
+    phi.Allocate("PHI", phisize);
+    bubmap.Allocate("bubmap",mat.get_nrow());
+    phi.ReadFileASCII(std::string(argv[4]));
+    
+    bubmap.LeaveDataPtr(&bubmap_ptr);
+    phi.LeaveDataPtr(&phi_ptr);
+
+    //x.SetRandom(0.0,1.0,1000);
+    bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
+    phi.Clear();
+    
+  }
+  ls.Setxdim(xdim);
+  ls.SetNVectors(defvex_perdirec);
+  ls.SetZlssd(setlssd);
+  mat.ConvertToCSR();  
+#endif
+  
+  ilu_p.Set(0);
+  ls.SetOperator(mat);
+  ls.SetPreconditioner(ilu_p);
+  ls.Init(0.0, 1e-6, 1e8, 20000);
+  ls.RecordResidualHistory();
+//  mat.ConvertToCSR();  
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+#endif  
+
+#ifdef BUBFLO  
+  ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
+  if(setlssd)
+    ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
+#endif  
+  ls.Build();
+#ifdef MATDIA  
+  mat.ConvertToDIA();
+#endif  
+  gettimeofday(&now, NULL);
+  tack = now.tv_sec*1000000.0+(now.tv_usec);
+  b=(tack-tick)/1000000;
+  std::cout << "Building:" << b << " sec" << std::endl;
+  
+  //ls.Verbose(2);
+  
+  gettimeofday(&now, NULL);
+  tick = now.tv_sec*1000000.0+(now.tv_usec);
+  
+  ls.Solve(rhs, &x);
+
+  gettimeofday(&now, NULL);
+  tack = now.tv_sec*1000000.0+(now.tv_usec);
+  s= (tack-tick)/1000000;
+  std::cout << "Solver execution:" << s << " sec" << std::endl;
+  std::cout << "Total execution:" << s+b << " sec" << std::endl;
+
+#ifdef SCALIN
+  x.PointWiseMult(Dinvhalf_min);
+#endif
+  x.MoveToHost();
+//   x.WriteFileASCII("x_solution_shell_scal.rec");
+#ifdef GUUS
+ // ls.RecordHistory("res_ongpu_ilu-p.rec");
+  sol_norm=x.Norm();
+  cout<<"\n Norm of Solution is "<<sol_norm<<endl;
+  cout<<"\n Norm of Reference Solution is "<<refsol.Norm()<<endl;
+  refones.AddScale(x,(double)-1.0f);
+  x.AddScale(refsol,(double)-1.0f);
+  
+  x.MoveToHost();
+  diff_norm=x.Norm();
+  ones_norm=refones.Norm();
+  cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
+  cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
+#endif  
+  
+  ls.Clear();
   
 /////////////////////////////////////////////////////////////////
 //   std::cout << "-----------------------------------------------" << std::endl;
@@ -585,98 +592,98 @@ int main(int argc, char* argv[]) {
 // /////////////////////////////////////////////////////////////////  
 //   
 // /////////////////////////////////////////////////////////////////  
-  std::cout << "-----------------------------------------------" << std::endl;
-  std::cout << "DPCG solver ME-ILU-ILU(0,1)" << std::endl;
-#ifdef GUUS  
-  rhs.ReadFileASCII(std::string(argv[3]));
-  x.SetRandom(0.0,1.0,1000);
-  ls.SetZ(Zin);
-#endif
-#ifdef BUBFLO  
-  x.ReadFileASCII(std::string(argv[2]));
-  rhs.ReadFileASCII(std::string(argv[3]));
-#endif
-  
-  gettimeofday(&now, NULL);
-  tick = now.tv_sec*1000000.0+(now.tv_usec);
-
-#ifdef BUBFLO
-  if(setlssd){
-    LocalVector<double> phi;
-    LocalVector<int> bubmap;
-    phi.Allocate("PHI", phisize);
-    bubmap.Allocate("bubmap",mat.get_nrow());
-    phi.ReadFileASCII(std::string(argv[4]));
-    
-    bubmap.LeaveDataPtr(&bubmap_ptr);
-    phi.LeaveDataPtr(&phi_ptr);
-
-    //x.SetRandom(0.0,1.0,1000);
-    bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
-    phi.Clear();
-    
-  }
-  ls.Setxdim(xdim);
-  ls.SetNVectors(defvex_perdirec);
-  ls.SetZlssd(setlssd);
-  mat.ConvertToCSR();    
-#endif  
-//   mcilu_p.Init(0);
+//   std::cout << "-----------------------------------------------" << std::endl;
+//   std::cout << "DPCG solver ME-ILU-ILU(0,1)" << std::endl;
+// #ifdef GUUS  
+//   rhs.ReadFileASCII(std::string(argv[3]));
+//   x.SetRandom(0.0,1.0,1000);
+//   ls.SetZ(Zin);
+// #endif
+// #ifdef BUBFLO  
+//   x.ReadFileASCII(std::string(argv[2]));
+//   rhs.ReadFileASCII(std::string(argv[3]));
+// #endif
 //   
-//   p.Init(mcilu_p, 1, 0.0);
-  mcilu_p.Set(0);
-  p.Set(mcilu_p, 2, 0.4);
-
-  ls.SetOperator(mat);
-  ls.SetPreconditioner(p);
-//   p.SetPrecondMatrixFormat(HYB);
-  ls.Init(0.0, 1e-6, 1e8, 200000);
-#ifdef BUBFLO  
-//   ls.SetNVectors(4);
-  ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
-  if(setlssd)
-    ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
-#endif    
-//   
-  
-  ls.Build();
-#ifdef MATDIA  
-  mat.ConvertToDIA();
-#endif  
-  gettimeofday(&now, NULL);
-  tack = now.tv_sec*1000000.0+(now.tv_usec);
-  b=(tack-tick)/1000000;
-  std::cout << "Building:" << b << " sec" << std::endl;
+//   gettimeofday(&now, NULL);
+//   tick = now.tv_sec*1000000.0+(now.tv_usec);
 // 
-//   ls.Verbose(2);
-  mat.info();
-
-  gettimeofday(&now, NULL);
-  tick = now.tv_sec*1000000.0+(now.tv_usec);
-
-  ls.Solve(rhs, &x);
-  
-  gettimeofday(&now, NULL);
-  tack = now.tv_sec*1000000.0+(now.tv_usec);
-  s= (tack-tick)/1000000;
-  std::cout << "Solver execution:" << s << " sec" << std::endl;
-  std::cout << "Total execution:" << s+b << " sec" << std::endl;
-#ifdef GUUS  
-x.MoveToHost();
-  sol_norm=x.Norm();
-  cout<<"\n Norm of Solution is "<<sol_norm<<endl;
-  cout<<"\n Norm of Reference Solution is "<<refsol.Norm()<<endl;
-  refones.AddScale(x,(double)-1.0f);
-  x.AddScale(refsol,(double)-1.0f);
-  
-  
-  diff_norm=x.Norm();
-  ones_norm=refones.Norm();
-  cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
-  cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
-  //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
-#endif  
-  ls.Clear();
+// #ifdef BUBFLO
+//   if(setlssd){
+//     LocalVector<double> phi;
+//     LocalVector<int> bubmap;
+//     phi.Allocate("PHI", phisize);
+//     bubmap.Allocate("bubmap",mat.get_nrow());
+//     phi.ReadFileASCII(std::string(argv[4]));
+//     
+//     bubmap.LeaveDataPtr(&bubmap_ptr);
+//     phi.LeaveDataPtr(&phi_ptr);
+// 
+//     //x.SetRandom(0.0,1.0,1000);
+//     bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
+//     phi.Clear();
+//     
+//   }
+//   ls.Setxdim(xdim);
+//   ls.SetNVectors(defvex_perdirec);
+//   ls.SetZlssd(setlssd);
+//   mat.ConvertToCSR();    
+// #endif  
+// //   mcilu_p.Init(0);
+// //   
+// //   p.Init(mcilu_p, 1, 0.0);
+//   mcilu_p.Set(0);
+//   p.Set(mcilu_p, 2, 0.4);
+// 
+//   ls.SetOperator(mat);
+//   ls.SetPreconditioner(p);
+// //   p.SetPrecondMatrixFormat(HYB);
+//   ls.Init(0.0, 1e-6, 1e8, 200000);
+// #ifdef BUBFLO  
+// //   ls.SetNVectors(4);
+//   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
+//   if(setlssd)
+//     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
+// #endif    
+// //   
+//   
+//   ls.Build();
+// #ifdef MATDIA  
+//   mat.ConvertToDIA();
+// #endif  
+//   gettimeofday(&now, NULL);
+//   tack = now.tv_sec*1000000.0+(now.tv_usec);
+//   b=(tack-tick)/1000000;
+//   std::cout << "Building:" << b << " sec" << std::endl;
+// // 
+// //   ls.Verbose(2);
+//   mat.info();
+// 
+//   gettimeofday(&now, NULL);
+//   tick = now.tv_sec*1000000.0+(now.tv_usec);
+// 
+//   ls.Solve(rhs, &x);
+//   
+//   gettimeofday(&now, NULL);
+//   tack = now.tv_sec*1000000.0+(now.tv_usec);
+//   s= (tack-tick)/1000000;
+//   std::cout << "Solver execution:" << s << " sec" << std::endl;
+//   std::cout << "Total execution:" << s+b << " sec" << std::endl;
+// #ifdef GUUS  
+// x.MoveToHost();
+//   sol_norm=x.Norm();
+//   cout<<"\n Norm of Solution is "<<sol_norm<<endl;
+//   cout<<"\n Norm of Reference Solution is "<<refsol.Norm()<<endl;
+//   refones.AddScale(x,(double)-1.0f);
+//   x.AddScale(refsol,(double)-1.0f);
+//   
+//   
+//   diff_norm=x.Norm();
+//   ones_norm=refones.Norm();
+//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
+//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
+//   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
+// #endif  
+//   ls.Clear();
 
 // /////////////////////////////////////////////////////////////////    
 //   std::cout << "-----------------------------------------------" << std::endl;
@@ -765,6 +772,97 @@ x.MoveToHost();
 // #endif  
 //   ls.Clear();
 /////////////////////////////////////////////////////////////////    
+  
+// /////////////////////////////////////////////////////////////////  
+//   std::cout << "-----------------------------------------------" << std::endl;
+//   std::cout << "DPCG solver jacobi" << std::endl;
+// #ifdef GUUS  
+//   rhs.ReadFileASCII(std::string(argv[3]));
+//   x.SetRandom(0.0,1.0,1000);
+//   ls.SetZ(Zin);
+// #endif
+// #ifdef BUBFLO  
+//   x.ReadFileASCII(std::string(argv[2]));
+//   rhs.ReadFileASCII(std::string(argv[3]));
+// #endif
+//   
+//   gettimeofday(&now, NULL);
+//   tick = now.tv_sec*1000000.0+(now.tv_usec);
+// 
+// #ifdef BUBFLO
+//   if(setlssd){
+//     LocalVector<double> phi;
+//     LocalVector<int> bubmap;
+//     phi.Allocate("PHI", phisize);
+//     bubmap.Allocate("bubmap",mat.get_nrow());
+//     phi.ReadFileASCII(std::string(argv[4]));
+//     
+//     bubmap.LeaveDataPtr(&bubmap_ptr);
+//     phi.LeaveDataPtr(&phi_ptr);
+// 
+//     //x.SetRandom(0.0,1.0,1000);
+//     bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
+//     phi.Clear();
+//     
+//   }
+//   ls.Setxdim(xdim);
+//   ls.SetNVectors(defvex_perdirec);
+//   ls.SetZlssd(setlssd);
+//   mat.ConvertToCSR();    
+// #endif  
+// 
+// 
+//   ls.SetOperator(mat);
+//   ls.SetPreconditioner(j_p);
+// //   p.SetPrecondMatrixFormat(HYB);
+//   ls.Init(0.0, 1e-6, 1e8, 200000);
+// #ifdef BUBFLO  
+// //   ls.SetNVectors(4);
+//   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
+//   if(setlssd)
+//     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
+// #endif    
+// //   
+//   
+//   ls.Build();
+// #ifdef MATDIA  
+//   mat.ConvertToDIA();
+// #endif  
+//   gettimeofday(&now, NULL);
+//   tack = now.tv_sec*1000000.0+(now.tv_usec);
+//   b=(tack-tick)/1000000;
+//   std::cout << "Building:" << b << " sec" << std::endl;
+// // 
+// //   ls.Verbose(2);
+//   mat.info();
+// 
+//   gettimeofday(&now, NULL);
+//   tick = now.tv_sec*1000000.0+(now.tv_usec);
+// 
+//   ls.Solve(rhs, &x);
+//   
+//   gettimeofday(&now, NULL);
+//   tack = now.tv_sec*1000000.0+(now.tv_usec);
+//   s= (tack-tick)/1000000;
+//   std::cout << "Solver execution:" << s << " sec" << std::endl;
+//   std::cout << "Total execution:" << s+b << " sec" << std::endl;
+// #ifdef GUUS  
+// x.MoveToHost();
+//   sol_norm=x.Norm();
+//   cout<<"\n Norm of Solution is "<<sol_norm<<endl;
+//   cout<<"\n Norm of Reference Solution is "<<refsol.Norm()<<endl;
+//   refones.AddScale(x,(double)-1.0f);
+//   x.AddScale(refsol,(double)-1.0f);
+//   
+//   
+//   diff_norm=x.Norm();
+//   ones_norm=refones.Norm();
+//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
+//   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
+//   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
+// #endif  
+//   ls.Clear();
+//   
   stop_paralution();
 
   return 0;

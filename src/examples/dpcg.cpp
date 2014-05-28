@@ -29,7 +29,7 @@ using namespace paralution;
 
 #define GUUS
 // #define SCALIN
-// #define GPURUN
+#define GPURUN
 // #define BUBFLO
 // #define MATDIA
 int main(int argc, char* argv[]) {
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
 #endif   
   ls.SetOperator(mat);
   ls.Init(0.0, 1e-6, 1e8, 200000);
-  ls.RecordResidualHistory();
+//  ls.RecordResidualHistory();
   
 
 #ifdef BUBFLO
@@ -191,7 +191,7 @@ int main(int argc, char* argv[]) {
 
 #ifdef GUUS  
 //   x.WriteFileASCII("x_solution_shell_inv_neumann.rec");
-//   ls.RecordHistory("res_shell_norm_ongpu_scal.rec");
+  //ls.RecordHistory("res__ongpu_tns.rec");
 //     x.MoveToHost();
 //   x.WriteFileASCII("x_neumann_inv.rec");
 //   x.MoveToAccelerator();
