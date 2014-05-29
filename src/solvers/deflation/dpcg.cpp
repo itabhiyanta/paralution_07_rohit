@@ -464,11 +464,12 @@ void DPCG<OperatorType, VectorType, ValueType>::Build(void) {
   
 
   this->AZ_.MatrixMult(*this->op_, this->Z_);
-
+//  std::cout<<"multiplied A with Z"<<endl;
   this->AZT_.CopyFrom(this->AZ_);
   this->AZT_.Transpose();
 
   this->E_.MatrixMult(this->ZT_, this->AZ_);
+//  std::cout<<"calculated E"<<endl;
 // 
 //   // The Invert() should be on the host
   this->E_.MoveToHost();
@@ -480,8 +481,12 @@ void DPCG<OperatorType, VectorType, ValueType>::Build(void) {
 // 
 //   // E_ goes back to the original backend
   this->E_.CloneBackend(*this->op_);
+ // this->E_.info();
+ // this->Z_.info();
+ // this->op_->info();
 //   this->ZT_.ConvertToELL();
 //   this->AZ_.ConvertToHYB();
+  //this->Z_.info();
 }
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -514,6 +519,8 @@ void DPCG<OperatorType, VectorType, ValueType>::Clear(void) {
     
     this->ZT_.Clear();
     this->E_.Clear();
+    this->E_.MoveToHost();
+    this->E_.ConvertToCSR();
     this->AZ_.Clear();
     
     this->Z_.Clear();
@@ -521,7 +528,29 @@ void DPCG<OperatorType, VectorType, ValueType>::Clear(void) {
     
     this->iter_ctrl_.Clear();
     
+    /*this->Z_.info(); 
+    this->E_.info();
+    this->op_->info();
+    
+    this->r_.info();
+    this->w_.info();
+    this->p_.info();
+    this->q_.info();
    
+    this->hat_.info();
+    this->intmed_.info();
+    this->Qb_.info();
+    this->Ptx_.info();
+    
+    this->ZT_.info();
+    this->AZ_.info();
+    this->AZT_.info();
+      this->Dinv_.info();
+      this->LLtx_.info();
+      this->LLtx2_.info();
+      this->L_.info();
+      this->LT_.info();
+    */
     this->build_ = false;
   }
 
