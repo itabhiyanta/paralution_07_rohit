@@ -26,7 +26,7 @@
 
 #ifndef PARALUTION_DEFLATION_DPCG_HPP_
 #define PARALUTION_DEFLATION_DPCG_HPP_
-
+// #define top(a,b)	((a/b) + (a%b==0)? (0) : (1) )
 #include "../solver.hpp"
 
 namespace paralution {
@@ -45,12 +45,15 @@ public:
   virtual void Clear(void);
 
   virtual void SetNVectors(const int);
+  virtual void SetNVectors_eachdirec(const int, const int, const int);
   virtual void Setlvst_offst(const int);
   virtual void SetZlssd(const int);
   virtual void Setxdim(const int);
+  virtual void Set_alldims(const int, const int, const int);
   virtual void SetZ(LocalMatrix<ValueType> &Z);
   virtual void MakeZLSSD(const int *bmap, const int);
   virtual void MakeZ_CSR(void);
+  virtual int top(const int, const int);
 protected:
   virtual void SolveNonPrecond_(const VectorType &rhs,
                                 VectorType *x);

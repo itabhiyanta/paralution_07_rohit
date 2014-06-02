@@ -134,6 +134,22 @@ void DPCG<OperatorType, VectorType, ValueType>::SetNVectors(const int novecni) {
 
 }
 template <class OperatorType, class VectorType, typename ValueType>
+void DPCG<OperatorType, VectorType, ValueType>::SetNVectors_eachdirec(const int novecnix,
+								      const int novecniy,
+								      const int novecniz) {
+//   LOG_DEBUG(this, "DPCG::SetNVectors_eachdirec()",
+//             novecnix, novecniy, novecniz);
+
+  assert(novecnix > 0);
+  this->novecni_x_ = novecnix;
+  assert(novecniy > 0);
+  this->novecni_y_ = novecniy;
+  assert(novecniz > 0);
+  this->novecni_z_ = novecniz;
+
+}
+
+template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::SetZlssd(const int val_zlssd) {
 
   //assert(val_zlssd > 0);
@@ -149,7 +165,22 @@ void DPCG<OperatorType, VectorType, ValueType>::Setxdim(const int val_xdim) {
 }
 
 template <class OperatorType, class VectorType, typename ValueType>
-void DPCG<OperatorType, VectorType, ValueType>::MakeZ_COO(void) {
+void DPCG<OperatorType, VectorType, ValueType>::Set_alldims(const int val_xdim,
+							    const int val_ydim,
+							    const int val_zdim) {
+
+  assert(val_xdim > 0);
+  this->xdim_ = val_xdim;
+  assert(val_ydim > 0);
+  this->ydim_ = val_ydim;
+  assert(val_zdim > 0);
+  this->zdim_ = val_zdim;
+
+}
+
+template <class OperatorType, class VectorType, typename ValueType>
+void DPCG<OperatorType, VectorType, ValueType>::MakeZ_COO(void) 
+{
 
   int ncol = novecni_*novecni_*novecni_ - 1; 
   int nrow = this->op_->get_nrow();
@@ -190,23 +221,80 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_COO(void) {
   
 }
 
+// template <class OperatorType, class VectorType, typename ValueType>
+// void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
+// 
+//   int nrow = this->op_->get_nrow();
+//   int nrows, ncols, part, i,j,column;
+//   int s, cntr=0, didx, didy, didz, nnz_Zsd, numvecs;
+//   s=xdim_/novecni_;
+//   int *Z_row_offset = NULL;  int *Z_col = NULL;  ValueType *Z_val = NULL;
+//   
+//   //this->Z_.ConvertToCSR();
+//   //cout<<"do we need to make Z lssd ? "<<zlssd_<<endl;
+//   if(zlssd_){
+//     numvecs = novecni_*novecni_*novecni_;
+//     nnz_Zsd=nrow;
+//   }
+//   else{
+//     numvecs = novecni_*novecni_*novecni_ - 1;
+//     part=nrow/(numvecs+1); 
+//     nnz_Zsd=nrow-part;
+//   }
+//   nrows= nrow;  ncols= numvecs;
+//   //cout<<"nrows ="<<nrows<<" ncols="<<numvecs<<" nnz_Zsd="<<nnz_Zsd<<endl;
+//   this->Z_.AllocateCSR("Z",nnz_Zsd,nrows,ncols);
+//   
+//   this->Z_.LeaveDataPtrCSR(&Z_row_offset, &Z_col, &Z_val);
+//   
+//   
+//   
+//   for(i=0,j=0;i<nrows;i++){
+//     // find z index
+//     didx=(i%xdim_)/s;   didy=((i/(xdim_*s))%novecni_);    didz=i/(xdim_*xdim_*s);
+//     column=didz*novecni_*novecni_+didy*novecni_+didx;
+//     //LOG_INFO("indices"<<didx<<" "<<didy<<" "<<didz);
+//     //if(didx==novecni_-1&&didy==novecni_-1&&didz==novecni_-1)
+//     if(column==numvecs && zlssd_!=1)
+//       {
+//         Z_row_offset[i+1]=Z_row_offset[i];
+//         cntr++;
+//       }//cout<<endl;
+//     else
+//       {
+//         Z_col[j]=column;
+//         Z_val[j] = 1.0f;
+//         Z_row_offset[i+1]=Z_row_offset[i]+1;
+//         j++;
+//       }
+//   }
+//   //LOG_INFO("Number of non-zeros in Z are "<<j<<" nrows-part is "<<nrows-part<<"discarded"<<cntr<<" should be equal to"<<nrows-part);
+//   Z_row_offset[i]=nnz_Zsd;
+//   this->Z_.SetDataPtrCSR(&Z_row_offset, &Z_col, &Z_val, "Z", nnz_Zsd, nrow, ncols);
+//    // at this point we have Z sub-domain, we need to have bubmap and then work with it  
+// }
+
+template <class OperatorType, class VectorType, typename ValueType>
+int DPCG<OperatorType, VectorType, ValueType>::top(const int val1, const int val2) {
+  
+  return (val1/val2) + ((val1%val2)==0 ? 0 : 1);
+}
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
 
   int nrow = this->op_->get_nrow();
   int nrows, ncols, part, i,j,column;
-  int s, cntr=0, didx, didy, didz, nnz_Zsd, numvecs;
-  s=xdim_/novecni_;
+  int cntr=0, d_idx, d_idy, d_idz, nnz_Zsd, numvecs;
   int *Z_row_offset = NULL;  int *Z_col = NULL;  ValueType *Z_val = NULL;
-  
+  int z_coord, y_coord, x_coord;
   //this->Z_.ConvertToCSR();
   //cout<<"do we need to make Z lssd ? "<<zlssd_<<endl;
   if(zlssd_){
-    numvecs = novecni_*novecni_*novecni_;
+    numvecs = novecni_x_ * novecni_y_ * novecni_x_;
     nnz_Zsd=nrow;
   }
   else{
-    numvecs = novecni_*novecni_*novecni_ - 1;
+    numvecs = novecni_x_ * novecni_y_ * novecni_z_ - 1;
     part=nrow/(numvecs+1); 
     nnz_Zsd=nrow-part;
   }
@@ -216,14 +304,21 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
   
   this->Z_.LeaveDataPtrCSR(&Z_row_offset, &Z_col, &Z_val);
   
+  for(i=0, j=0 ; i<nrows; i++)
+    //workign on the idea that each idex of the grid can e represented as
+    // i= a * (xdim_ * ydim_) + b * xdim_ + c
+    // where a --> z co-ord, b --> y co-ord, c --> x co-ord.
+  {
+    z_coord=i/(xdim_ * ydim_);	
+    y_coord=(i - z_coord * xdim_ * ydim_)/xdim_;	
+    x_coord=i - z_coord * xdim_ * ydim_ - y_coord * xdim_;
+    
+    d_idx=top(x_coord, novecni_x_) - 1;
+    d_idy=top(y_coord, novecni_y_) - 1;
+    d_idz=top(z_coord, novecni_z_) - 1;
+    
+    column=d_idz * novecni_x_ * novecni_y_ + d_idy * novecni_y_ + d_idx;
   
-  
-  for(i=0,j=0;i<nrows;i++){
-    // find z index
-    didx=(i%xdim_)/s;   didy=((i/(xdim_*s))%novecni_);    didz=i/(xdim_*xdim_*s);
-    column=didz*novecni_*novecni_+didy*novecni_+didx;
-    //LOG_INFO("indices"<<didx<<" "<<didy<<" "<<didz);
-    //if(didx==novecni_-1&&didy==novecni_-1&&didz==novecni_-1)
     if(column==numvecs && zlssd_!=1)
       {
         Z_row_offset[i+1]=Z_row_offset[i];
