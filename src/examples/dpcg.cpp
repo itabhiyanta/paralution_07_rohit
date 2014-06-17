@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
     
   }
   ls.Setxdim(xdim);
-  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.SetNVectors_eachdirec(defvex_perdirec+1, defvex_perdirec+2, defvex_perdirec+3);
   ls.Set_alldims(xdim, xdim, xdim);
   ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);

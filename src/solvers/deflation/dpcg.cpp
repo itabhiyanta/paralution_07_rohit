@@ -288,7 +288,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
   //this->Z_.ConvertToCSR();
   //cout<<"do we need to make Z lssd ? "<<zlssd_<<endl;
   if(zlssd_){
-    numvecs = novecni_x_ * novecni_y_ * novecni_x_;
+    numvecs = novecni_x_ * novecni_y_ * novecni_z_;
     nnz_Zsd=nrow;
   }
   else{
@@ -297,7 +297,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
     nnz_Zsd=nrow-part;
   }
   nrows= nrow;  ncols= numvecs;
-  //cout<<"nrows ="<<nrows<<" ncols="<<numvecs<<" nnz_Zsd="<<nnz_Zsd<<endl;
+  cout<<"nrows ="<<nrows<<" ncols="<<numvecs<<" nnz_Zsd="<<nnz_Zsd<<endl;
   this->Z_.AllocateCSR("Z",nnz_Zsd,nrows,ncols);
   
   this->Z_.LeaveDataPtrCSR(&Z_row_offset, &Z_col, &Z_val);
@@ -584,14 +584,6 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
 //   }
 //   
 
-   // Finding number of levels in last vector
-/*   posval=0;
-   for(k=col_ctr-1;k<col_ctr;k++)
-   {
-     for(j=0;j<maxbmap;j++)
-        if(numbub_pervec[k*(maxbmap+1)+j]>0)
-	  posval++;
-   }*/	
    // Finding maximum columns' value 
    // (cumulative sum of all columns possible in vectors + no. of levels in last vector)
    totalmax= maxcol_w1-1 + numbub_pervec[(maxcol_w1-1)*(maxbmap+1)+maxbmap];// + posval;
