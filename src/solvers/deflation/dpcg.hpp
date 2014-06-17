@@ -53,7 +53,7 @@ public:
   virtual void SetZ(LocalMatrix<ValueType> &Z);
   virtual void MakeZLSSD(const int *bmap, const int);
   virtual void MakeZ_CSR(void);
-  virtual int top(const int, const int);
+  
 protected:
   virtual void SolveNonPrecond_(const VectorType &rhs,
                                 VectorType *x);

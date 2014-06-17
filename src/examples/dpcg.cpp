@@ -27,11 +27,11 @@
 using namespace std;
 using namespace paralution;
 
-#define GUUS
+// #define GUUS
 // #define SCALIN
 #define GPURUN
-// #define BUBFLO
-// #define MATDIA
+#define BUBFLO
+#define MATDIA
 int main(int argc, char* argv[]) {
 
   if (argc == 1) { 
@@ -127,6 +127,8 @@ int main(int argc, char* argv[]) {
     
   }
   ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
   ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
@@ -160,6 +162,8 @@ int main(int argc, char* argv[]) {
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
 #endif    
 //   
+//  stop_paralution();
+//  return 0;
   ls.Build();
 #ifdef MATDIA  
    mat.ConvertToDIA();
@@ -170,7 +174,7 @@ int main(int argc, char* argv[]) {
   b=(tack-tick)/1000000;
   std::cout << "Building:" << b << " sec" << std::endl;
   
-//  ls.Verbose(2);
+  ls.Verbose(2);
 
   mat.info();
 
@@ -189,12 +193,15 @@ int main(int argc, char* argv[]) {
   x.PointWiseMult(Dinvhalf_min);
 #endif
 
+//   
+
+  
 #ifdef GUUS  
 //   x.WriteFileASCII("x_solution_shell_inv_neumann.rec");
   //ls.RecordHistory("res__ongpu_tns.rec");
-//     x.MoveToHost();
-//   x.WriteFileASCII("x_neumann_inv.rec");
-//   x.MoveToAccelerator();
+  x.MoveToHost();
+  x.WriteFileASCII("x_neumann.rec");
+  x.MoveToAccelerator();
   sol_norm=x.Norm();
   mat.Apply(x, &chk_r); 
   chk_r.ScaleAdd(double(-1.0), rhs);
@@ -212,8 +219,7 @@ int main(int argc, char* argv[]) {
 #endif  
   ls.Clear();
   
-//   x.MoveToHost();
-//   x.WriteFileASCII("x_neumann.rec");
+
 
   stop_paralution();
 

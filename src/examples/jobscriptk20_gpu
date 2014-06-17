@@ -2,17 +2,17 @@
 #$ -pe openmpi 1 
 #$ -l h_rt=2:15:00
 #$ -l fat,gpu=K20
-#$ -N pdpcg_ongpu_guus1e3_16_mcsgs_ilup_1e6
+#$ -N pdpcg_ongpu_bflo_Z_lssd_chk_new_colstry
 #$ -cwd
 
-APP=./dpcg_precon
+APP=./dpcg
 #ARGS=" A x b phi openMP_threads xdim ydim zdim lssd_vex_flag defvex_x defvex_y defvex_z levelset_ghost_points
-# ARGS="/var/scratch/rgupta/dimitar_tsts_dec2013/AC32_9bub_lssd.mtx  /var/scratch/rgupta/dimitar_tsts_dec2013/x_readin32_9bub_lssd.rec /var/scratch/rgupta/dimitar_tsts_dec2013/b_readin32_9bub_lssd.rec /var/scratch/rgupta/dimitar_tsts_dec2013/phi_readin32_9bub_lssd.rec 32 1 4 2"
+ARGS="/var/scratch/rgupta/dimitar_tsts_dec2013/AC32_9bub_lssd.mtx  /var/scratch/rgupta/dimitar_tsts_dec2013/x_readin32_9bub_lssd.rec /var/scratch/rgupta/dimitar_tsts_dec2013/b_readin32_9bub_lssd.rec /var/scratch/rgupta/dimitar_tsts_dec2013/phi_readin32_9bub_lssd.rec 32 1 4 2"
 # ARGS="../../../convert_coo_to_mm/a_63_16_1e7.mtx ../../../convert_coo_to_mm/Z_63_16_1e7.mtx ../../../convert_coo_to_mm/r_63_16_1e7.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_shell_inv.mtx /var/scratch/rgupta/guus_data/Z_shell_inv.mtx /var/scratch/rgupta/guus_data/r_shell_inv.dat /var/scratch/rgupta/guus_data/sol_shell_inv.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_shell_norm.mtx /var/scratch/rgupta/guus_data/Z_shell_norm.mtx /var/scratch/rgupta/guus_data/r_shell_norm.dat /var/scratch/rgupta/guus_data/sol_shell_norm.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_shell_norm1e7_16.mtx /var/scratch/rgupta/guus_data/Z_shell_norm1e7_16.mtx /var/scratch/rgupta/guus_data/r_shell_nrm1e7_16.dat /var/scratch/rgupta/guus_data/sol_shell_nrm1e7_16.dat 8"
-ARGS="/var/scratch/rgupta/guus_data/a_shell_1e3_16.mtx /var/scratch/rgupta/guus_data/Z_shell_1e3_16.mtx /var/scratch/rgupta/guus_data/r_shell_1e3_16.dat /var/scratch/rgupta/guus_data/sol_shell_1e3_16.dat 8"
+# ARGS="/var/scratch/rgupta/guus_data/a_layer9_1e3.mtx /var/scratch/rgupta/guus_data/Z_layer9_1e3.mtx /var/scratch/rgupta/guus_data/r_layer9_1e3.dat /var/scratch/rgupta/guus_data/sol_layer9_1e3.dat 8"
 # Get OpenMPI settings
 . /etc/bashrc
 module load openmpi/gcc

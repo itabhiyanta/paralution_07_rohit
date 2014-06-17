@@ -274,8 +274,47 @@ int instore(int *store, int val, int *index, int sizeofstore)//linear search of 
 }
 
 
-
+int get_vecnum(int rowid, int xdim, int ydim, int zdim, int novecni_x_,
+	       int novecni_y_, int novecni_z_)
+{
+  int x_coord, y_coord, z_coord, d_idx, d_idy, d_idz, column, tempval;
   
+  
+    z_coord	=	rowid/(xdim * ydim);	
+    tempval	=	rowid - z_coord * xdim * ydim;
+    y_coord	=	(tempval>0)?(tempval)/xdim:0;	
+    tempval	=	tempval-y_coord * xdim;
+    x_coord	=	(tempval>0)?tempval:0;
+    
+    tempval	=	top(x_coord, xdim, novecni_x_) ;
+    d_idx	=	(tempval>0)?tempval:0;
+    tempval	=	top(y_coord, ydim, novecni_y_);	
+    d_idy	=	(tempval>0)?tempval:0;
+    tempval	=	top(z_coord, zdim, novecni_z_);
+    d_idz	=	(tempval>0)?tempval:0;
+    
+    
+    column=d_idz * novecni_x_ * novecni_y_ + d_idy * novecni_x_ + d_idx;
+    
+    return column;
+}
+
+int top(const int coord, const int dim, const int vec_indim) {
+  
+  //int non_multiple, novec_perdirec,
+  int domain_id_intg, coord_perdomain_intg;
+  //non_multiple		=	dim % vec_indim;
+  //novec_perdirec	=	dim / vec_indim;
+  coord_perdomain_intg	=	dim / vec_indim;
+  domain_id_intg	=	coord / coord_perdomain_intg;
+//   if(non_multiple) // the dimension is not a multiple of no. of vectors
+//     if(coord+1>coord_perdomain_intg*vec_indim)
+//       return (domain_id_intg + 1);
+//     else
+//       return domain_id_intg;
+//   else
+    return (domain_id_intg) ;
+}
 int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 {
   int i, storectr, index, *store; char maxbmap;//name[20], 
@@ -345,6 +384,63 @@ int calclvlstval(int left, int bottom, int leftface, int inj, double *phimap, in
 
   free(valarray);
   return retval;
+}
+void swap_int(int *in1, int *in2, int *tmp)
+{
+  *tmp=*in1;
+  *in1=*in2;
+  *in2=*tmp;
+}
+void swap_dbl(double *in1, double *in2, double *tmp)
+{
+  *tmp=*in1;
+  *in1=*in2;
+  *in2=*tmp;
+}
+void quick_sort(int *cols, int  *rows, double *vals, int low, int high)
+{
+ int pivot,j,temp,i;
+ double temp_double;
+ if(low<high)
+ {
+  pivot = low;
+  i = low;
+  j = high;
+ 
+  while(i<j)
+  {
+   while((cols[i]<=cols[pivot])&&(i<high))
+   {
+    i++;
+   }
+ 
+   while(cols[j]>cols[pivot])
+   {
+    j--;
+   }
+ 
+   if(i<j)
+   {
+//     temp=cols[i];
+//     cols[i]=cols[j];
+//     cols[j]=temp;
+    swap_int(&cols[i], &cols[j], &temp);
+    swap_int(&rows[i], &rows[j], &temp);
+    swap_dbl(&vals[i], &vals[j], &temp_double);
+    // swap rows and vals also
+   }
+  }
+ 
+//   temp=cols[pivot];
+//   cols[pivot]=cols[j];
+//   cols[j]=temp;
+  swap_int(&cols[pivot], &cols[j], &temp);
+  swap_int(&rows[pivot], &rows[j], &temp);
+  swap_dbl(&vals[pivot], &vals[j], &temp_double);
+  // swap rows and vals also
+  quick_sort(cols, rows, vals,low,j-1);
+  quick_sort(cols, rows, vals,j+1,high);
+ }
 }
 
 }

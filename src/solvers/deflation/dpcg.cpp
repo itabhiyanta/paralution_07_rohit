@@ -38,11 +38,12 @@
 
 #include "../../utils/log.hpp"
 #include "../../utils/allocate_free.hpp"
-
+#include "../../utils/math_functions.hpp"
 #include <assert.h>
 #include <math.h>
 #include <fstream>
 #include <iomanip>
+#include <cstring>
 using namespace std;
 namespace paralution {
 
@@ -220,65 +221,62 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_COO(void)
   this->Z_.ConvertToCSR();
   
 }
-
-// template <class OperatorType, class VectorType, typename ValueType>
-// void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
-// 
-//   int nrow = this->op_->get_nrow();
-//   int nrows, ncols, part, i,j,column;
-//   int s, cntr=0, didx, didy, didz, nnz_Zsd, numvecs;
-//   s=xdim_/novecni_;
-//   int *Z_row_offset = NULL;  int *Z_col = NULL;  ValueType *Z_val = NULL;
-//   
-//   //this->Z_.ConvertToCSR();
-//   //cout<<"do we need to make Z lssd ? "<<zlssd_<<endl;
-//   if(zlssd_){
-//     numvecs = novecni_*novecni_*novecni_;
-//     nnz_Zsd=nrow;
-//   }
-//   else{
-//     numvecs = novecni_*novecni_*novecni_ - 1;
-//     part=nrow/(numvecs+1); 
-//     nnz_Zsd=nrow-part;
-//   }
-//   nrows= nrow;  ncols= numvecs;
-//   //cout<<"nrows ="<<nrows<<" ncols="<<numvecs<<" nnz_Zsd="<<nnz_Zsd<<endl;
-//   this->Z_.AllocateCSR("Z",nnz_Zsd,nrows,ncols);
-//   
-//   this->Z_.LeaveDataPtrCSR(&Z_row_offset, &Z_col, &Z_val);
-//   
-//   
-//   
-//   for(i=0,j=0;i<nrows;i++){
-//     // find z index
-//     didx=(i%xdim_)/s;   didy=((i/(xdim_*s))%novecni_);    didz=i/(xdim_*xdim_*s);
-//     column=didz*novecni_*novecni_+didy*novecni_+didx;
-//     //LOG_INFO("indices"<<didx<<" "<<didy<<" "<<didz);
-//     //if(didx==novecni_-1&&didy==novecni_-1&&didz==novecni_-1)
-//     if(column==numvecs && zlssd_!=1)
-//       {
-//         Z_row_offset[i+1]=Z_row_offset[i];
-//         cntr++;
-//       }//cout<<endl;
-//     else
-//       {
-//         Z_col[j]=column;
-//         Z_val[j] = 1.0f;
-//         Z_row_offset[i+1]=Z_row_offset[i]+1;
-//         j++;
-//       }
-//   }
-//   //LOG_INFO("Number of non-zeros in Z are "<<j<<" nrows-part is "<<nrows-part<<"discarded"<<cntr<<" should be equal to"<<nrows-part);
-//   Z_row_offset[i]=nnz_Zsd;
-//   this->Z_.SetDataPtrCSR(&Z_row_offset, &Z_col, &Z_val, "Z", nnz_Zsd, nrow, ncols);
-//    // at this point we have Z sub-domain, we need to have bubmap and then work with it  
-// }
-
+/*
 template <class OperatorType, class VectorType, typename ValueType>
-int DPCG<OperatorType, VectorType, ValueType>::top(const int val1, const int val2) {
+  void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
   
-  return (val1/val2) + ((val1%val2)==0 ? 0 : 1);
-}
+    int nrow = this->op_->get_nrow();
+    int nrows, ncols, part, i,j,column;
+    int s, cntr=0, didx, didy, didz, nnz_Zsd, numvecs;
+    s=xdim_/novecni_;
+    int *Z_row_offset = NULL;  int *Z_col = NULL;  ValueType *Z_val = NULL;
+    
+    //this->Z_.ConvertToCSR();
+   //cout<<"do we need to make Z lssd ? "<<zlssd_<<endl;
+    if(zlssd_){
+      numvecs = novecni_*novecni_*novecni_;
+      nnz_Zsd=nrow;
+    }
+    else{
+      numvecs = novecni_*novecni_*novecni_ - 1;
+      part=nrow/(numvecs+1); 
+      nnz_Zsd=nrow-part;
+    }
+    nrows= nrow;  ncols= numvecs;
+    //cout<<"nrows ="<<nrows<<" ncols="<<numvecs<<" nnz_Zsd="<<nnz_Zsd<<endl;
+    this->Z_.AllocateCSR("Z",nnz_Zsd,nrows,ncols);
+    
+    this->Z_.LeaveDataPtrCSR(&Z_row_offset, &Z_col, &Z_val);
+    
+    
+    
+    for(i=0,j=0;i<nrows;i++){
+      // find z index
+      didx=(i%xdim_)/s;   didy=((i/(xdim_*s))%novecni_);    didz=i/(xdim_*xdim_*s);
+      column=didz*novecni_*novecni_+didy*novecni_+didx;
+      //LOG_INFO("indices"<<didx<<" "<<didy<<" "<<didz);
+      //if(didx==novecni_-1&&didy==novecni_-1&&didz==novecni_-1)
+     if(column==numvecs && zlssd_!=1)
+        {
+          Z_row_offset[i+1]=Z_row_offset[i];
+          cntr++;
+        }//cout<<endl;
+      else
+        {
+          Z_col[j]=column;
+          Z_val[j] = 1.0f;
+          Z_row_offset[i+1]=Z_row_offset[i]+1;
+          j++;
+        }
+    }
+    //LOG_INFO("Number of non-zeros in Z are "<<j<<" nrows-part is "<<nrows-part<<"discarded"<<cntr<<" should be equal to"<<nrows-part);
+    Z_row_offset[i]=nnz_Zsd;
+    this->Z_.SetDataPtrCSR(&Z_row_offset, &Z_col, &Z_val, "Z", nnz_Zsd, nrow, ncols);
+     // at this point we have Z sub-domain, we need to have bubmap and then work with it  
+    this->Z_.WriteFileMTX("Zcsr_old_sd.rec");
+  }*/
+
+
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
 
@@ -286,7 +284,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
   int nrows, ncols, part, i,j,column;
   int cntr=0, d_idx, d_idy, d_idz, nnz_Zsd, numvecs;
   int *Z_row_offset = NULL;  int *Z_col = NULL;  ValueType *Z_val = NULL;
-  int z_coord, y_coord, x_coord;
+  int z_coord, y_coord, x_coord, tempval;
   //this->Z_.ConvertToCSR();
   //cout<<"do we need to make Z lssd ? "<<zlssd_<<endl;
   if(zlssd_){
@@ -303,22 +301,33 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
   this->Z_.AllocateCSR("Z",nnz_Zsd,nrows,ncols);
   
   this->Z_.LeaveDataPtrCSR(&Z_row_offset, &Z_col, &Z_val);
+//   cout<<"xdim_="<<xdim_<<" ydim_="<<ydim_<<" zdim_="<<zdim_<<endl;
+//   cout<<"novecni_x_="<<novecni_x_<<" novecni_y_="<<novecni_y_<<" novecni_z_="<<novecni_z_<<endl;
   
+  Z_row_offset[0]=0;
   for(i=0, j=0 ; i<nrows; i++)
     //workign on the idea that each idex of the grid can e represented as
     // i= a * (xdim_ * ydim_) + b * xdim_ + c
     // where a --> z co-ord, b --> y co-ord, c --> x co-ord.
   {
-    z_coord=i/(xdim_ * ydim_);	
-    y_coord=(i - z_coord * xdim_ * ydim_)/xdim_;	
-    x_coord=i - z_coord * xdim_ * ydim_ - y_coord * xdim_;
+    z_coord	=	i/(xdim_ * ydim_);	
+    tempval	=	i - z_coord * xdim_ * ydim_;
+    y_coord	=	(tempval>0)?(tempval)/xdim_:0;	
+    tempval	=	tempval-y_coord * xdim_;
+    x_coord	=	(tempval>0)?tempval:0;
     
-    d_idx=top(x_coord, novecni_x_) - 1;
-    d_idy=top(y_coord, novecni_y_) - 1;
-    d_idz=top(z_coord, novecni_z_) - 1;
+    tempval	=	top(x_coord, xdim_, novecni_x_) ;
+    d_idx	=	(tempval>0)?tempval:0;
+    tempval	=	top(y_coord, ydim_, novecni_y_);
+    d_idy	=	(tempval>0)?tempval:0;
+    tempval	=	top(z_coord, zdim_, novecni_z_);
+    d_idz	=	(tempval>0)?tempval:0;
     
-    column=d_idz * novecni_x_ * novecni_y_ + d_idy * novecni_y_ + d_idx;
-  
+    column=d_idz * novecni_x_ * novecni_y_ + d_idy * novecni_x_ + d_idx;
+//    cout<<"x_coord="<<x_coord<<" y_coord="<<y_coord<<" z_coord="<<z_coord<<endl;  
+//    cout<<"row="<<i<<" column="<<column<<endl;
+//    cout<<" d_idz="<<d_idz<<" d_idy="<<d_idy<<" d_idx="<<d_idx<<endl<<endl;
+   
     if(column==numvecs && zlssd_!=1)
       {
         Z_row_offset[i+1]=Z_row_offset[i];
@@ -336,6 +345,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
   Z_row_offset[i]=nnz_Zsd;
   this->Z_.SetDataPtrCSR(&Z_row_offset, &Z_col, &Z_val, "Z", nnz_Zsd, nrow, ncols);
    // at this point we have Z sub-domain, we need to have bubmap and then work with it  
+//   this->Z_.WriteFileMTX("Zcsr_new_sd.rec");
 }
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -348,15 +358,143 @@ void DPCG<OperatorType, VectorType, ValueType>::SetZ(LocalMatrix<ValueType> &Zin
 
 }
 
+/*template <class OperatorType, class VectorType, typename ValueType>
+  void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const int maxbmap){
+    // Z sub-domain and bubmap are assumed to have been made already 
+    int *Zsubd_rows=NULL, *Zsubd_cols=NULL, i, complementval, rowid, j,k, s;
+    int didx_x, didx_y, didx_z, gridarea2d, griddiminx, dom_idx_x, dom_idx_y, dom_idx_z;
+    int domarea2d, domsize, numvecs, save_idx, rem_frm_w2;
+    int nnz_w2=0, nnz_w1=0, col_ctr, nnz_orig, new_col_value;
+    int *Zlssd_rows=NULL, *Zlssd_cols=NULL, maxcol_w1;
+   FILE *fp, *fp1;
+    ValueType *Zsubd_vals=NULL, *Zlssd_vals=NULL;
+    //cout<<"The non zeros in Z are "<<this->Z_.get_nnz()<<endl;
+   nnz_orig=this->Z_.get_nnz();
+    // now we make w1 and w2
+    this->Z_.ConvertToCOO();
+    this->Z_.MoveToHost();
+    this->Z_.LeaveDataPtrCOO(&Zsubd_rows, &Zsubd_cols, &Zsubd_vals);
+    // getting arrays of Z into pointers.
+    
+    for(i=0;i<nnz_orig;i++){
+      complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
+    
+      if(((ValueType)complementval)*Zsubd_vals[i])
+        nnz_w1++;
+    }//calculated number of non-zeros in w1
+    
+    // this count of nnz_w1 can now be used to make a new Z matrix
+      s=xdim_/novecni_;	numvecs=novecni_*novecni_*novecni_;
+    domsize=s*s*s;  griddiminx=xdim_/s; gridarea2d=griddiminx*griddiminx; domarea2d=s*s;
+    for(j=0;j<numvecs;j++){
+      didx_x=(j)%griddiminx;    didx_y=(j%gridarea2d)/griddiminx; didx_z=(j)/gridarea2d;
+      for(k=0;k<domsize;k++){
+        dom_idx_x=(k)%s;      dom_idx_y=(k%domarea2d)/s;	dom_idx_z=(k)/domarea2d;
+        rowid=didx_x*s+didx_y*griddiminx*domarea2d+didx_z*gridarea2d*domsize+ 
+  			  dom_idx_x+dom_idx_y*xdim_+dom_idx_z*xdim_*xdim_;
+  	if(bmap[rowid]>0)
+  	  nnz_w2++;
+      }
+    }
+    cout<<"Number of non-zeros in w1 "<<nnz_w1<<" and in w2 is "<<nnz_w2<<" respectively."<<" Sum is ="<<nnz_w1+nnz_w2<<"."<<endl;
+    //Allocating space for Z_lssd
+    Zlssd_rows=new int[nnz_w1+nnz_w2];	Zlssd_cols=new int[nnz_w1+nnz_w2];
+    Zlssd_vals= new ValueType[nnz_w1+nnz_w2];
+    // use w1, w2 and Z_CSR_subdomain to generate Z_COO_LSSD
+    col_ctr=0;
+    for(i=0,j=0;i<nnz_orig;i++){
+      complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
+      if(((ValueType)complementval)*Zsubd_vals[i])
+      {
+        Zlssd_rows[j]=Zsubd_rows[i];	Zlssd_cols[j]=Zsubd_cols[i];	Zlssd_vals[j]=Zsubd_vals[i];
+        j++;
+        if(Zsubd_cols[i]>col_ctr)
+  	col_ctr=Zsubd_cols[i];
+      }
+    }// we have included w1 in Zlssd
+ fp=fopen("Z_lssd_old_w1.rec","wt");
+ for(i=0;i<nnz_w1+nnz_w2;i++)
+   fprintf(fp,"%d %d %0.2f\n",Zlssd_rows[i], Zlssd_cols[i], Zlssd_vals[i]);
+ fclose(fp); 
+    maxcol_w1=col_ctr+1;
+    col_ctr=maxcol_w1;
+   cout<<"Number of columns from w1 is "<<col_ctr<<". Entries added for w1 ="<<j<<"."<<endl;
+    save_idx=j;// saving the index from the last set of vectors
+    i=save_idx;
+   
+ //   fp=fopen("col_idxs_w2_old.rec","wt");
+ //   fp1=fopen("domain_bubmap_old.rec","wt");
+        s=xdim_/novecni_;	numvecs=novecni_*novecni_*novecni_;
+    domsize=s*s*s;  griddiminx=xdim_/s; gridarea2d=griddiminx*griddiminx; domarea2d=s*s;
+    for(j=0;j<numvecs;j++){
+      didx_x=(j)%griddiminx;    didx_y=(j%gridarea2d)/griddiminx; didx_z=(j)/gridarea2d;
+      for(k=0;k<domsize;k++){
+        dom_idx_x=(k)%s;      dom_idx_y=(k%domarea2d)/s;	dom_idx_z=(k)/domarea2d;
+        rowid=didx_x*s+didx_y*griddiminx*domarea2d+didx_z*gridarea2d*domsize+ 
+  			  dom_idx_x+dom_idx_y*xdim_+dom_idx_z*xdim_*xdim_;
+  	if(bmap[rowid]>0)
+  	{
+  	  Zlssd_rows[i]=rowid;	Zlssd_cols[i]=(bmap[rowid]-1)+j*maxbmap; Zlssd_vals[i]=(ValueType)1.0f;
+ // 	  fprintf(fp,"%d \n",bmap[rowid]-1+j*maxbmap+maxcol_w1);
+ // 	  fprintf(fp1,"%d %d %d\n",j, bmap[rowid], rowid);
+  	  i++;
+ // 	  if(bmap[rowid]-1+j+maxcol_w1>col_ctr)
+  // 	  {
+  // 	    col_ctr=bmap[rowid]-1+j*maxbmap+maxcol_w1;
+  // 	 
+  // 	  }
+  	}
+      }
+    }
+ //   fclose(fp);
+ //   fclose(fp1);
+ fp=fopen("Z_lssd_old_w1w2.rec","wt");
+ for(i=0;i<nnz_w1+nnz_w2;i++)
+   fprintf(fp,"%d %d %0.2f\n",Zlssd_rows[i], Zlssd_cols[i], Zlssd_vals[i]);
+ fclose(fp); 
+    //serialize values in Zlssd
+    col_ctr=Zlssd_cols[save_idx];
+    new_col_value=maxcol_w1;
+    for (i = save_idx; i < nnz_w1+nnz_w2; i++){
+          if(col_ctr!=Zlssd_cols[i])
+  	{
+  	  col_ctr=Zlssd_cols[i];
+  	  new_col_value=new_col_value+1;
+  	}
+  	Zlssd_cols[i]=new_col_value;
+    }
+    //removing 1 column to avoid possibility that 1 belongs to Row space(Zlssd)
+    rem_frm_w2=0;
+    for (i = nnz_w1+nnz_w2-1; i >= 0; i--)
+      if(Zlssd_cols[i]==new_col_value)
+        rem_frm_w2++;
+      
+ fp=fopen("Z_lssd_old_w1w2_corr.rec","wt");
+ for(i=0;i<nnz_w1+nnz_w2;i++)
+   fprintf(fp,"%d %d %0.2f\n",Zlssd_rows[i], Zlssd_cols[i], Zlssd_vals[i]);
+ fclose(fp); 
+ 
+    cout<<"Number of columns after addig w2 (DPCG-LSSD) is "<<new_col_value<<"Non-zeros to be removed are= "<<rem_frm_w2<<endl;
+    
+    this->Z_.Clear();
+    this->Z_.SetDataPtrCOO(&Zlssd_rows, &Zlssd_cols, &Zlssd_vals, "Zlssd", nnz_w1+nnz_w2-rem_frm_w2, this->op_->get_nrow(),new_col_value);
+    //convert Z_COO LSSD to Z_CSR LSSD
+    //this->ZLSSD_.ConvertToCSR();
+    //this->Z_.WriteFileMTX("ZLSSD_2sd.rec");
+    this->Z_.ConvertToCSR();
+    this->Z_.WriteFileMTX("Zcsr_old_lssd.rec");
+  //   this->Z_.MoveToAccelerator();
+  }*/
+
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const int maxbmap){
   // Z sub-domain and bubmap are assumed to have been made already 
-  int *Zsubd_rows=NULL, *Zsubd_cols=NULL, i, complementval, rowid, j,k, s;
-  int didx_x, didx_y, didx_z, gridarea2d, griddiminx, dom_idx_x, dom_idx_y, dom_idx_z;
-  int domarea2d, domsize, numvecs, save_idx, rem_frm_w2;
-  int nnz_w2=0, nnz_w1=0, col_ctr, nnz_orig, new_col_value;
-  int *Zlssd_rows=NULL, *Zlssd_cols=NULL, maxcol_w1;
-//  FILE *fp, *fp1;
+  int *Zsubd_rows=NULL, *Zsubd_cols=NULL, i, complementval, j, vec_num,k;
+  
+  int save_idx, rem_frm_w2=0,posval, totalmax, colidx, expr;
+  int nnz_w2=0, nnz_w1=0, col_ctr, nnz_orig, dim;
+  int *Zlssd_rows=NULL, *Zlssd_cols=NULL, *numbub_pervec=NULL, maxcol_w1;
+ FILE *fp, *fp1;
   ValueType *Zsubd_vals=NULL, *Zlssd_vals=NULL;
   //cout<<"The non zeros in Z are "<<this->Z_.get_nnz()<<endl;
   nnz_orig=this->Z_.get_nnz();
@@ -365,7 +503,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   this->Z_.MoveToHost();
   this->Z_.LeaveDataPtrCOO(&Zsubd_rows, &Zsubd_cols, &Zsubd_vals);
   // getting arrays of Z into pointers.
-  
+  dim=this->op_->get_nrow();
   for(i=0;i<nnz_orig;i++){
     complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
   
@@ -374,19 +512,11 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   }//calculated number of non-zeros in w1
   
   // this count of nnz_w1 can now be used to make a new Z matrix
-    s=xdim_/novecni_;	numvecs=novecni_*novecni_*novecni_;
-  domsize=s*s*s;  griddiminx=xdim_/s; gridarea2d=griddiminx*griddiminx; domarea2d=s*s;
-  for(j=0;j<numvecs;j++){
-    didx_x=(j)%griddiminx;    didx_y=(j%gridarea2d)/griddiminx; didx_z=(j)/gridarea2d;
-    for(k=0;k<domsize;k++){
-      dom_idx_x=(k)%s;      dom_idx_y=(k%domarea2d)/s;	dom_idx_z=(k)/domarea2d;
-      rowid=didx_x*s+didx_y*griddiminx*domarea2d+didx_z*gridarea2d*domsize+ 
-			  dom_idx_x+dom_idx_y*xdim_+dom_idx_z*xdim_*xdim_;
-	if(bmap[rowid]>0)
-	  nnz_w2++;
-    }
-  }
-  //cout<<"Number of non-zeros in w1 "<<nnz_w1<<" and in w2 is "<<nnz_w2<<" respectively."<<" Sum is ="<<nnz_w1+nnz_w2<<"."<<endl;
+  for(i=0;i<dim; i++)
+    if(bmap[i]>0)
+      nnz_w2++;
+    
+  cout<<"Number of non-zeros in w1 "<<nnz_w1<<" and in w2 is "<<nnz_w2<<" respectively."<<" Sum is ="<<nnz_w1+nnz_w2<<"."<<endl;
   //Allocating space for Z_lssd
   Zlssd_rows=new int[nnz_w1+nnz_w2];	Zlssd_cols=new int[nnz_w1+nnz_w2];
   Zlssd_vals= new ValueType[nnz_w1+nnz_w2];
@@ -404,63 +534,109 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   }// we have included w1 in Zlssd
   maxcol_w1=col_ctr+1;
   col_ctr=maxcol_w1;
-//  cout<<"Number of columns from w1 is "<<col_ctr<<". Entries added for w1 ="<<j<<"."<<endl;
+ cout<<"Number of columns from w1 is "<<col_ctr<<". Entries added for w1 ="<<j<<"."<<endl;
   save_idx=j;// saving the index from the last set of vectors
-  i=save_idx;
-  
-//   fp=fopen("col_idxs_w2.rec","wt");
-//   fp1=fopen("domain_bubmap.rec","wt");
-      s=xdim_/novecni_;	numvecs=novecni_*novecni_*novecni_;
-  domsize=s*s*s;  griddiminx=xdim_/s; gridarea2d=griddiminx*griddiminx; domarea2d=s*s;
-  for(j=0;j<numvecs;j++){
-    didx_x=(j)%griddiminx;    didx_y=(j%gridarea2d)/griddiminx; didx_z=(j)/gridarea2d;
-    for(k=0;k<domsize;k++){
-      dom_idx_x=(k)%s;      dom_idx_y=(k%domarea2d)/s;	dom_idx_z=(k)/domarea2d;
-      rowid=didx_x*s+didx_y*griddiminx*domarea2d+didx_z*gridarea2d*domsize+ 
-			  dom_idx_x+dom_idx_y*xdim_+dom_idx_z*xdim_*xdim_;
-	if(bmap[rowid]>0)
+ 
+  numbub_pervec= new int[col_ctr*(maxbmap+1)]; 
+// #pragma omp parallel for 
+  for(j=0;j<col_ctr*(maxbmap+1);j++)
+    numbub_pervec[j]=0;
+  //calculate which levels in bmap exist in which vectors.
+  // can be more than one level per vector or none
+// #pragma omp parallel for 
+  for(j=0;j<dim;j++)
+    if(bmap[j]>0)
 	{
-	  Zlssd_rows[i]=rowid;	Zlssd_cols[i]=(bmap[rowid]-1)+j*maxbmap; Zlssd_vals[i]=(ValueType)1.0f;
-// 	  fprintf(fp,"%d \n",bmap[rowid]-1+j*maxbmap+maxcol_w1);
-// 	  fprintf(fp1,"%d %d %d\n",j, bmap[rowid], rowid);
-	  i++;
-// 	  if(bmap[rowid]-1+j+maxcol_w1>col_ctr)
-// 	  {
-// 	    col_ctr=bmap[rowid]-1+j*maxbmap+maxcol_w1;
-// 	 
-// 	  }
+	 vec_num=get_vecnum(j, xdim_, ydim_, zdim_, novecni_x_, novecni_y_, novecni_z_);
+	 numbub_pervec[vec_num*(maxbmap+1)+bmap[j]-1]++;
 	}
-    }
-  }
+ // Assign each level in each vector a number in increasing order starting from 1.
+ // This helps in counting how many levels per vector are there so the columns
+ // can be added serially.
+//    for(k=0;k<col_ctr;k++)
+//    {
+//      for(j=0;j<maxbmap;j++)
+//	printf("%d ",numbub_pervec[k*(maxbmap+1)+j]);
+//      printf("_+_-> %d ",numbub_pervec[k*(maxbmap+1)+j]);
+//      printf("\n");
+//    }
+//  printf("\n*********************************\n");
+  for(j=0;j<col_ctr;j++)
+  {
+   posval=1;
+    for(k=0;k<maxbmap;k++)
+      if(numbub_pervec[j*(maxbmap+1)+k]>0)
+         {
+           numbub_pervec[j*(maxbmap+1)+k]=posval;
+           ++posval;
+         }
+         // calculate cumulative sum of each vector's number of levels and store in last index (maxbmap+1)
+    //if(j>0)// not needed
+      numbub_pervec[j*(maxbmap+1)+maxbmap]=numbub_pervec[(j-1)*(maxbmap+1)+maxbmap]+posval-1;
+
+  }  
+//   for(k=0;k<col_ctr;k++)
+//   {
+//     for(j=0;j<maxbmap;j++)
+// 	printf("%d ",numbub_pervec[k*(maxbmap+1)+j]);
+//    printf("_+_-> %d ",numbub_pervec[k*(maxbmap+1)+j]);
+//     printf("\n");
+//   }
+//   
+
+   // Finding number of levels in last vector
+/*   posval=0;
+   for(k=col_ctr-1;k<col_ctr;k++)
+   {
+     for(j=0;j<maxbmap;j++)
+        if(numbub_pervec[k*(maxbmap+1)+j]>0)
+	  posval++;
+   }*/	
+   // Finding maximum columns' value 
+   // (cumulative sum of all columns possible in vectors + no. of levels in last vector)
+   totalmax= maxcol_w1-1 + numbub_pervec[(maxcol_w1-1)*(maxbmap+1)+maxbmap];// + posval;
+   printf("\n Total number of columns is %d",totalmax+1);
+   // 1 is added to make it no. of columns rather than idex in C
+
+//Make new columns ins Z_lssd minus the column with largest value    
+//removing 1 column to avoid possibility that 1 belongs to Row space(Zlssd)
+//#pragma omp parallel for  
+//   fp=fopen("colds_w2_new.rec","wt");
+  for(j=0,i=save_idx;j<dim;j++)
+    if(bmap[j]>0)
+	{
+	  vec_num=get_vecnum(j, xdim_, ydim_, zdim_, novecni_x_, novecni_y_, novecni_z_);
+	  expr=(((vec_num-1)*(maxbmap+1)+maxbmap)>0)?numbub_pervec[((vec_num-1)*(maxbmap+1)+maxbmap)]:0;
+	  colidx = numbub_pervec[vec_num*(maxbmap+1)+(bmap[j]-1)] +
+		    maxcol_w1-1 +
+		    expr;
+          if(colidx==totalmax)
+            ++rem_frm_w2;
+          else{ 
+	  Zlssd_rows[i] = j;	Zlssd_cols[i]=colidx;
+          
+//          fprintf(fp,"(%d,%d) %d + %d + %d = %d\n",vec_num, bmap[j]-1,
+// 						numbub_pervec[vec_num*(maxbmap+1)+(bmap[j]-1)],  maxcol_w1-1 ,
+// 						 expr, Zlssd_cols[i]);
+	  Zlssd_vals[i] = (ValueType)1.0f;
+          i++;
+          }
+       }
 //   fclose(fp);
-//   fclose(fp1);
-  //serialize values in Zlssd
-  col_ctr=Zlssd_cols[save_idx];
-  new_col_value=maxcol_w1;
-  for (i = save_idx; i < nnz_w1+nnz_w2; i++){
-        if(col_ctr!=Zlssd_cols[i])
-	{
-	  col_ctr=Zlssd_cols[i];
-	  new_col_value=new_col_value+1;
-	}
-	Zlssd_cols[i]=new_col_value;
-  }
-  //removing 1 column to avoid possibility that 1 belongs to Row space(Zlssd)
-  rem_frm_w2=0;
-  for (i = nnz_w1+nnz_w2-1; i >= 0; i--)
-    if(Zlssd_cols[i]==new_col_value)
-      rem_frm_w2++;
-    
-  
-  cout<<"Number of columns after addig w2 (DPCG-LSSD) is "<<new_col_value<<"Non-zeros to be removed are= "<<rem_frm_w2<<endl;
-  
+/* fp=fopen("Z_lssd_new_w1w2.rec","wt");
+ for(i=0;i<nnz_w1+nnz_w2;i++)
+   fprintf(fp,"%d %d %0.2f\n",Zlssd_rows[i], Zlssd_cols[i], Zlssd_vals[i]);
+ fclose(fp);*/ 
+  printf("\n non-zeros removed are %d. originally were %d. Setting cols=%d",rem_frm_w2, nnz_w1+nnz_w2, totalmax);  
   this->Z_.Clear();
-  this->Z_.SetDataPtrCOO(&Zlssd_rows, &Zlssd_cols, &Zlssd_vals, "Zlssd", nnz_w1+nnz_w2-rem_frm_w2, this->op_->get_nrow(),new_col_value);
+  this->Z_.SetDataPtrCOO(&Zlssd_rows, &Zlssd_cols, &Zlssd_vals, "Zlssd", nnz_w1+nnz_w2-rem_frm_w2, this->op_->get_nrow(),totalmax);
   //convert Z_COO LSSD to Z_CSR LSSD
   //this->ZLSSD_.ConvertToCSR();
   //this->Z_.WriteFileMTX("ZLSSD_2sd.rec");
   this->Z_.ConvertToCSR();
+//   this->Z_.WriteFileMTX("Zcsr_new_lssd.rec");
 //   this->Z_.MoveToAccelerator();
+  delete [] numbub_pervec;
 }
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::Build(void) {
@@ -512,9 +688,9 @@ void DPCG<OperatorType, VectorType, ValueType>::Build(void) {
 
     this->LT_.CopyFrom(this->L_);
     this->LT_.Transpose();
-/*    
+    
     this->L_.ConvertToDIA();
-    this->LT_.ConvertToDIA();*/
+    this->LT_.ConvertToDIA();
   }
   this->w_.CloneBackend(*this->op_);
   this->w_.Allocate("w", this->op_->get_nrow());
@@ -568,11 +744,11 @@ void DPCG<OperatorType, VectorType, ValueType>::Build(void) {
 // 
 //   // The Invert() should be on the host
   this->E_.MoveToHost();
-//   this->E_.WriteFileMTX("E_shell_inv.rec");
+//   this->E_.WriteFileMTX("E_shell_inv_old.rec");
 
   this->E_.ConvertToDENSE();
   this->E_.Invert();
-  
+//  this->E_.WriteFileMTX("E_inv_old_lssd.rec");
 // 
 //   // E_ goes back to the original backend
   this->E_.CloneBackend(*this->op_);
@@ -774,10 +950,16 @@ void DPCG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const VectorTyp
 
   /// deflation
   // Z^{T}r
+//   printf("\n r-norm is %0.7f before deflation",this->Norm(*r));
   ZT->Apply(*r, hat);
+//   hat->MoveToHost();
+//   hat->WriteFileASCII("hat.rec");
+//   hat->MoveToAccelerator();
+//   printf("\n hat-norm is %0.7f after Ztx",this->Norm(*hat));
   E->Apply(*hat, intmed);
+//   printf("\n intmed-norm is %0.7f after E apply",this->Norm(*intmed));
   AZ->Apply(*intmed, w);
-
+//   printf("\n w-norm is %0.7f before adding to r",this->Norm(*w));
   // r = r - w
   r->AddScale(*w, ValueType(-1.0));
 
@@ -790,7 +972,7 @@ void DPCG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const VectorTyp
  
 
   this->iter_ctrl_.InitResidual(b_norm);
-
+//   printf("\n r-norm is %0.7f. b-norm is %0.7f",res_norm, b_norm);
   //Apply preconditioning w=M^{-1}r
   L->Apply(*r, LLtx);
   L->Apply(*LLtx, LLtx2);
@@ -804,6 +986,7 @@ void DPCG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const VectorTyp
   LT->Apply(*LLtx, LLtx2);
   w->ScaleAdd2(ValueType(1.0), *LLtx, ValueType(-1.0), *LLtx2, ValueType(1.0));
 
+//   printf("\n w-norm is %0.7f",this->Norm(*w));
   // rho = (r,w)
   rho = r->Dot(*w);
 

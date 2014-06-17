@@ -42,7 +42,13 @@ int makebubmap(const int , const int, const int, const int , const double *, int
 int instore(int *, int , int *, int);//linear search of unique values
 int fixbubmap(int *, int, int);
 int calclvlstval(int, int, int, int, double *, int *, int, int, int);
+int get_vecnum(int rowid, int xdim, int ydim, int zdim, int novecni_x_,
+	       int novecni_y_, int novecni_z_);
+int top(const int, const int, const int);
 
+void swap_int(int *in1, int *in2, int *tmp);
+void swap_dbl(double *in1, double *in2, double *tmp);
+void quick_sort(int *cols, int  *rows, double *vals, int low, int high);
 }
 
 #endif // PARALUTION_UTILS_MATH_FUNCTIONS_HPP_
