@@ -26,9 +26,10 @@
 
 #include "math_functions.hpp"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+using namespace std;
 namespace paralution {
 
 float paralution_abs(const float val) {
@@ -143,7 +144,7 @@ int bubmap_create(const double *phi, int *bubmap, const int xdim, const int ydim
   //FILE *fp;  int i;
   makebubmap(xdim, ydim, zdim, dim, phi, bubmap, 0, lvst_offst);
   *maxbmap=fixbubmap(bubmap, xdim, dim);
-  //printf("\n maxbmap is %d",*maxbmap);
+  printf("\n maxbmap is %d",*maxbmap);
 //   fp=fopen("bubmap_par_128_9bub.rec","wt");
 //   for(i=0;i<dim;i++)
 //     fprintf(fp,"%d \n",bubmap[i]);
@@ -156,44 +157,53 @@ int bubmap_create(const double *phi, int *bubmap, const int xdim, const int ydim
 int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 	       const double *phi, int *bubmap, const int extension, const int lvst_offst)
 {
-    int i,j,k, Xcord, Ycord, Zcord, left, right, top, bottom, leftface, rightface;
+    int i,j,k, Xcord, Ycord, Zcord, left, right, top, bottom, leftface, rightface, tempval;
     int decide;//, storectr, *store, index;
     int phin_x, phin_y, phin_z;
-    int *submap; //char name[20];	FILE *fp;
+    int *submap; //char name[20];
+    FILE *fp;
     double *phimap;
     submap	=(int*)calloc(dim,sizeof(int));
     phimap	=(double*)calloc(dim,sizeof(double));
     
     phin_x=xdim+2*lvst_offst;	phin_y=ydim+2*lvst_offst;	phin_z=zdim+2*lvst_offst;
-    j=lvst_offst*phin_x*phin_y+lvst_offst*phin_x+lvst_offst;
+    j=lvst_offst*phin_y*phin_z+lvst_offst*phin_z+lvst_offst;
     ///operate on phi here and generate a Z;
     ///we have to eliminate the surrounding ghost points (2 on each boundary)
     //printf("\n extension chosen is %d", extension);
     k=0;
     while(1)
     {    
-      if( ((k%xdim)==0) && (k!=0))// we have hit a row boundary in the cude so jump over two points
+      if( ((k%zdim)==0) && (k!=0))// we have hit a row boundary in the cude so jump over two points
 	j=j+lvst_offst+lvst_offst;
-      if( ((k%(xdim*ydim))==0) && (k!=0))//we have hit the top now we need to jump 2+2*n+2*n+2 points
-	j=j+lvst_offst*phin_x+lvst_offst*phin_x;
+      if( ((k%(ydim*zdim))==0) && (k!=0))//we have hit the top now we need to jump 2+2*n+2*n+2 points
+	j=j+lvst_offst*phin_z+lvst_offst*phin_z;
       if(k>(dim-1))
 	break;
       phimap[k]=phi[j];
         j++;  k++;      
     }   
+//     fp=fopen("phimap_irreg.rec","wt");
+//     for(i=0;i<dim;i++);
+//       fprintf(fp,"%0.9f\n",phimap[i]);
+//     fclose(fp);
     /// phimap has only the phi values for the grid points.
     j=0;decide=0;
     for (i=0;i<dim;i++)
     {
       if(phimap[i]>=0.0){
         //calculate left and bottom for this point
-        Xcord=(i%xdim);
-        //if(i>=(xdim*xdim))	Ycord=(i/xdim)-xdim;	else	Ycord=i/xdim;
-        Zcord=i/(xdim*ydim);
-	Ycord=(i/xdim)%ydim;
-        if(Xcord==0)	left=-1;	else	left=i-1;
-        if(Ycord==0)	bottom=-1;	else	bottom=i-xdim;
-        if(Zcord==0)	leftface=-1;	else	leftface=i-(xdim*ydim);
+	Xcord	=	i/(ydim * zdim);	
+	tempval	=	i - Xcord * ydim * zdim;
+	Ycord	=	(tempval>0)?(tempval)/zdim:0;	
+	tempval	=	tempval-Ycord * zdim;
+	Zcord	=	(tempval>0)?tempval:0;
+//         Xcord=(i%xdim);
+//         Zcord=i/(xdim*ydim);
+// 	Ycord=(i/xdim)%ydim;
+        if(Zcord==0)	left=-1;	else	left=i-1;
+        if(Ycord==0)	bottom=-1;	else	bottom=i-zdim;
+        if(Xcord==0)	leftface=-1;	else	leftface=i-(ydim*zdim);
         
         j=calclvlstval(left,bottom,leftface, j, phimap, bubmap, i, decide, dim);
 	//j=returnj;        bubmap(i)=returnval;
@@ -205,13 +215,17 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
     {
       if(phimap[i]>=0.0){
         //calculate left and bottom for this point
-        Xcord=(i%xdim);
-        //if(i>=(xdim*xdim))	Ycord=(i/xdim)-xdim;	else	Ycord=i/xdim;
-        Zcord=i/(xdim*ydim);
-	Ycord=(i/xdim)%ydim;
-        if(Xcord==xdim-1)	right=-1;	else	right=i+1;
-        if(Ycord==ydim-1)	top=-1;		else	top=i+xdim;
-        if(Zcord==zdim-1)	rightface=-1;	else	rightface=i+(xdim*ydim);
+	Xcord	=	i/(ydim * zdim);	
+	tempval	=	i - Xcord * ydim * zdim;
+	Ycord	=	(tempval>0)?(tempval)/zdim:0;	
+	tempval	=	tempval-Ycord * zdim;
+	Zcord	=	(tempval>0)?tempval:0;
+//         Xcord=(i%xdim);
+//         Zcord=i/(xdim*ydim);
+// 	Ycord=(i/xdim)%ydim;
+        if(Zcord==zdim-1)	right=-1;	else	right=i+1;
+        if(Ycord==ydim-1)	top=-1;		else	top=i+zdim;
+        if(Xcord==xdim-1)	rightface=-1;	else	rightface=i+(ydim*zdim);
         
         j=calclvlstval(right,top,rightface, j, phimap, bubmap, i, decide, dim);
 	//j=returnj;        bubmap(i)=returnval;
@@ -249,11 +263,11 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 //     }
 //   }
   
-//    sprintf(name,"bubmap_.rec");
-//  fp=fopen(name,"wt");
-// for(i=0;i<dim;i++)
-//   fprintf(fp,"%d \n",bubmap[i]);
-// fclose(fp);  
+   
+/* fp=fopen("bubmap_.rec","wt");
+for(i=0;i<dim;i++)
+  fprintf(fp,"%d \n",bubmap[i]);
+fclose(fp); */ 
   free(phimap);  
   free(submap);
   
@@ -280,45 +294,46 @@ int get_vecnum(int rowid, int xdim, int ydim, int zdim, int novecni_x_,
   int x_coord, y_coord, z_coord, d_idx, d_idy, d_idz, column, tempval;
   
   
-    z_coord	=	rowid/(xdim * ydim);	
-    tempval	=	rowid - z_coord * xdim * ydim;
-    y_coord	=	(tempval>0)?(tempval)/xdim:0;	
-    tempval	=	tempval-y_coord * xdim;
-    x_coord	=	(tempval>0)?tempval:0;
+    x_coord	=	rowid/(ydim * zdim);	
+    tempval	=	rowid - x_coord * ydim * zdim;
+    y_coord	=	(tempval>0)?(tempval)/zdim:0;	
+    tempval	=	tempval-y_coord * zdim;
+    z_coord	=	(tempval>0)?tempval:0;
     
-    tempval	=	top(x_coord, xdim, novecni_x_) ;
-    d_idx	=	(tempval>0)?tempval:0;
+    tempval	=	top(z_coord, zdim, novecni_z_) ;
+    d_idz	=	(tempval>0)?tempval:0;
     tempval	=	top(y_coord, ydim, novecni_y_);	
     d_idy	=	(tempval>0)?tempval:0;
-    tempval	=	top(z_coord, zdim, novecni_z_);
-    d_idz	=	(tempval>0)?tempval:0;
+    tempval	=	top(x_coord, xdim, novecni_x_);
+    d_idx	=	(tempval>0)?tempval:0;
     
     
-    column=d_idz * novecni_x_ * novecni_y_ + d_idy * novecni_x_ + d_idx;
+    column=d_idx * novecni_y_ * novecni_z_ + d_idy * novecni_z_ + d_idz;
     
     return column;
 }
 
 int top(const int coord, const int dim, const int vec_indim) {
   
-  //int non_multiple, novec_perdirec,
+  int non_multiple;//, novec_perdirec,
   int domain_id_intg, coord_perdomain_intg;
-  //non_multiple		=	dim % vec_indim;
+  non_multiple		=	dim % vec_indim;
   //novec_perdirec	=	dim / vec_indim;
   coord_perdomain_intg	=	dim / vec_indim;
   domain_id_intg	=	coord / coord_perdomain_intg;
-//   if(non_multiple) // the dimension is not a multiple of no. of vectors
-//     if(coord+1>coord_perdomain_intg*vec_indim)
-//       return (domain_id_intg + 1);
-//     else
-//       return domain_id_intg;
-//   else
+  if(non_multiple) // the dimension is not a multiple of no. of vectors
+    if(coord+1>coord_perdomain_intg*vec_indim) // check if 
+      return (domain_id_intg - 1);
+    else
+      return domain_id_intg;
+  else
     return (domain_id_intg) ;
 }
 int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 {
   int i, storectr, index, *store; char maxbmap;//name[20], 
   store=(int*)calloc(maxnumbubs,sizeof(int));
+  FILE *fp;
   //memset(store,0,sizeof(int)*maxnumbubs);//setting to zeros
   for(i=0;i<maxnumbubs;i++)
     store[i]=0;
@@ -342,13 +357,14 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
       bubmap[i]=index+1;
     }
   }
- /* sprintf(name,"fxdbubmap_%d.rec",procid);
- fp=fopen(name,"wt");
-for(i=0;i<dim;i++)
-  fprintf(fp,"%d \n",bubmap[i]);
-fclose(fp);  */
+  
+//  fp=fopen("fxdbubmap_.rec","wt");
+// for(i=0;i<dim;i++)
+//   fprintf(fp,"%d \n",bubmap[i]);
+// fclose(fp);  
   free(store);
-  maxbmap=index+1;
+  //maxbmap=index+1;
+  maxbmap=storectr;
   return maxbmap;
 }
 
