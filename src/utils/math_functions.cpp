@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "omp.h"
 using namespace std;
 namespace paralution {
 
@@ -157,14 +158,14 @@ int bubmap_create(const double *phi, int *bubmap, const int xdim, const int ydim
 int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 	       const double *phi, int *bubmap, const int extension, const int lvst_offst)
 {
-    int i,j,k, Xcord, Ycord, Zcord, left, right, top, bottom, leftface, rightface, tempval;
-    int decide;//, storectr, *store, index;
-    int phin_x, phin_y, phin_z;
-    int *submap; //char name[20];
+    int j,k;
+    int decide, phin_x, phin_y, phin_z, *submap, *all_nayburs; //char name[20];
+    int max_threads, num_procs;
     FILE *fp;
     double *phimap;
     submap	=(int*)calloc(dim,sizeof(int));
     phimap	=(double*)calloc(dim,sizeof(double));
+    all_nayburs	=(int*)calloc(dim*3,sizeof(int));
     
     phin_x=xdim+2*lvst_offst;	phin_y=ydim+2*lvst_offst;	phin_z=zdim+2*lvst_offst;
     j=lvst_offst*phin_y*phin_z+lvst_offst*phin_z+lvst_offst;
@@ -172,6 +173,7 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
     ///we have to eliminate the surrounding ghost points (2 on each boundary)
     //printf("\n extension chosen is %d", extension);
     k=0;
+    
     while(1)
     {    
       if( ((k%zdim)==0) && (k!=0))// we have hit a row boundary in the cude so jump over two points
@@ -189,49 +191,72 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 //     fclose(fp);
     /// phimap has only the phi values for the grid points.
     j=0;decide=0;
-    for (i=0;i<dim;i++)
+//     max_threads=omp_get_max_threads();
+//     num_procs= omp_get_num_procs();
+//     printf("\n Number of thread for openMP inside makebubmap are %d. max_threads are %d. num_procs %d", omp_get_num_threads(), max_threads, num_procs);
+//     omp_set_num_threads(8);
+//     printf("\n Number of thread for openMP inside makebubmap are now %d", omp_get_num_threads());
+#pragma omp parallel
     {
-      if(phimap[i]>=0.0){
-        //calculate left and bottom for this point
-	Xcord	=	i/(ydim * zdim);	
-	tempval	=	i - Xcord * ydim * zdim;
-	Ycord	=	(tempval>0)?(tempval)/zdim:0;	
-	tempval	=	tempval-Ycord * zdim;
-	Zcord	=	(tempval>0)?tempval:0;
-//         Xcord=(i%xdim);
-//         Zcord=i/(xdim*ydim);
-// 	Ycord=(i/xdim)%ydim;
-        if(Zcord==0)	left=-1;	else	left=i-1;
-        if(Ycord==0)	bottom=-1;	else	bottom=i-zdim;
-        if(Xcord==0)	leftface=-1;	else	leftface=i-(ydim*zdim);
-        
-        j=calclvlstval(left,bottom,leftface, j, phimap, bubmap, i, decide, dim);
-	//j=returnj;        bubmap(i)=returnval;
+      omp_set_num_threads(omp_get_max_threads());
+      #pragma omp for
+    for (int i=0;i<dim;i++)
+      {
+	int Xcord, Ycord, Zcord, tempval, left, bottom, leftface;
+	if(phimap[i]>=0.0){
+	  //calculate left and bottom for this point
+	  Xcord	=	i/(ydim * zdim);	
+	  tempval	=	i - Xcord * ydim * zdim;
+	  Ycord	=	(tempval>0)?(tempval)/zdim:0;	
+	  tempval	=	tempval-Ycord * zdim;
+	  Zcord	=	(tempval>0)?tempval:0;
+
+	  if(Zcord==0)	left=-1;	else	left=i-1;
+	  if(Ycord==0)	bottom=-1;	else	bottom=i-zdim;
+	  if(Xcord==0)	leftface=-1;	else	leftface=i-(ydim*zdim);
+	  all_nayburs[i]=left;	all_nayburs[dim+i]=bottom;	all_nayburs[2*dim+i]=leftface;	
+	}
       }
     }
+    for (int i=0;i<dim;i++)
+      {
+	if(phimap[i]>=0.0){
+	j=calclvlstval(all_nayburs[i],all_nayburs[dim+i],all_nayburs[2*dim+i],
+		       j, phimap, bubmap, i, decide, dim);
+	}
+      }
 
     decide=1;
-    for (i=dim-1;i>=0;i--)
+#pragma omp parallel
     {
-      if(phimap[i]>=0.0){
-        //calculate left and bottom for this point
-	Xcord	=	i/(ydim * zdim);	
-	tempval	=	i - Xcord * ydim * zdim;
-	Ycord	=	(tempval>0)?(tempval)/zdim:0;	
-	tempval	=	tempval-Ycord * zdim;
-	Zcord	=	(tempval>0)?tempval:0;
-//         Xcord=(i%xdim);
-//         Zcord=i/(xdim*ydim);
-// 	Ycord=(i/xdim)%ydim;
-        if(Zcord==zdim-1)	right=-1;	else	right=i+1;
-        if(Ycord==ydim-1)	top=-1;		else	top=i+zdim;
-        if(Xcord==xdim-1)	rightface=-1;	else	rightface=i+(ydim*zdim);
-        
-        j=calclvlstval(right,top,rightface, j, phimap, bubmap, i, decide, dim);
-	//j=returnj;        bubmap(i)=returnval;
+      omp_set_num_threads(omp_get_max_threads());
+      #pragma omp for
+      for (int i=dim-1;i>=0;i--)
+      {
+	int Xcord, Ycord, Zcord, tempval, right, top, rightface;
+	if(phimap[i]>=0.0){
+	  //calculate left and bottom for this point
+	  Xcord	=	i/(ydim * zdim);	
+	  tempval	=	i - Xcord * ydim * zdim;
+	  Ycord	=	(tempval>0)?(tempval)/zdim:0;	
+	  tempval	=	tempval-Ycord * zdim;
+	  Zcord	=	(tempval>0)?tempval:0;
+
+	  if(Zcord==zdim-1)	right=-1;	else	right=i+1;
+	  if(Ycord==ydim-1)	top=-1;		else	top=i+zdim;
+	  if(Xcord==xdim-1)	rightface=-1;	else	rightface=i+(ydim*zdim);
+	  all_nayburs[i]=right;	all_nayburs[dim+i]=top;	all_nayburs[2*dim+i]=rightface;	
+	
+	}
       }
     }
-   
+    for (int i=dim-1;i>=0;i--)
+      {
+	if(phimap[i]>=0.0){
+	  j=calclvlstval(all_nayburs[i],all_nayburs[dim+i],all_nayburs[2*dim+i],
+			 j, phimap, bubmap, i, decide, dim);
+	}
+      }
   ///Now extend boundaries of the bubbles
 //    for (k=0;k<extension;k++){
 //     memcpy(submap,bubmap,sizeof(int)*dim);
@@ -263,13 +288,8 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 //     }
 //   }
   
-   
-/* fp=fopen("bubmap_.rec","wt");
-for(i=0;i<dim;i++)
-  fprintf(fp,"%d \n",bubmap[i]);
-fclose(fp); */ 
-  free(phimap);  
-  free(submap);
+
+  free(phimap);	free(all_nayburs);  free(submap);
   
   return 0;
 }
@@ -278,6 +298,7 @@ int instore(int *store, int val, int *index, int sizeofstore)//linear search of 
 {
   int i, found;
   found=0;
+// #pragma omp parallel for   
   for(i=0;i<sizeofstore;i++)
     if(val==store[i])
     {
@@ -331,25 +352,37 @@ int top(const int coord, const int dim, const int vec_indim) {
 }
 int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 {
-  int i, storectr, index, *store; char maxbmap;//name[20], 
+  int storectr, index, *store; char maxbmap;//name[20], 
   store=(int*)calloc(maxnumbubs,sizeof(int));
   FILE *fp;
   //memset(store,0,sizeof(int)*maxnumbubs);//setting to zeros
-  for(i=0;i<maxnumbubs;i++)
+  omp_set_num_threads(omp_get_max_threads());
+#pragma omp parallel   
+  {
+    
+//     printf("\n no. threads loop 1 of fixbubmap is %d",omp_get_num_threads());
+#pragma omp for  
+  for(int i=0;i<maxnumbubs;i++)
     store[i]=0;
+  }
   storectr=0; index=0;
   // serialize bubmap give it values between 1 and number of bubbles instead of random values 
   // that come out of this code
-  for(i=0;i<dim;i++)
+//  #pragma omp for   
+  for(int i=0;i<dim;i++)
    {
      if(bubmap[i]>0 )
        if(!instore(store,bubmap[i], &index, storectr))
 	  store[storectr++]=bubmap[i];
    }
  //  printf("\n num bubs on proc %d is %d\n",procid, numbub);
-  for(i=0;i<dim;i++)
-    
+#pragma omp parallel   
+{
+  omp_set_num_threads(omp_get_max_threads());
+#pragma omp for  
+  for(int i=0;i<dim;i++)
   {
+    int index;
     if(bubmap[i]>0)
     {
       instore(store,bubmap[i], &index, storectr);
@@ -357,6 +390,7 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
       bubmap[i]=index+1;
     }
   }
+}
   
 //  fp=fopen("fxdbubmap_.rec","wt");
 // for(i=0;i<dim;i++)

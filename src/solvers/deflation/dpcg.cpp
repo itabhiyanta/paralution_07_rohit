@@ -39,6 +39,7 @@
 #include "../../utils/log.hpp"
 #include "../../utils/allocate_free.hpp"
 #include "../../utils/math_functions.hpp"
+#include "omp.h"
 #include <assert.h>
 #include <math.h>
 #include <fstream>
@@ -319,6 +320,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
 //   fp=fopen("Zsd_record.rec","wt");
   Z_row_offset[0]=0;
 //   fp1=fopen("Z_tobeset.rec","wt");
+  
   for(i=0, j=0 ; i<nrows; i++)
     //working on the idea that each idex of the grid can e represented as
     // i= a * (xdim_ * ydim_) + b * xdim_ + c
@@ -522,34 +524,47 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   this->Z_.LeaveDataPtrCOO(&Zsubd_rows, &Zsubd_cols, &Zsubd_vals);
   // getting arrays of Z into pointers.
   dim=this->op_->get_nrow();
-  for(i=0;i<nnz_orig;i++){
-    complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
-  
-    if(((ValueType)complementval)*Zsubd_vals[i])
-      nnz_w1++;
-  }//calculated number of non-zeros in w1
+#pragma omp parallel
+  {
+    nnz_w1=0;
+    omp_set_num_threads(omp_get_max_threads());
+#pragma omp for reduction(+:nnz_w1)  
+    for(int i=0;i<nnz_orig;i++){
+      int complementval;
+      complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
+    
+      if(((ValueType)complementval)*Zsubd_vals[i])
+	nnz_w1=nnz_w1+1;
+      
+    }//calculated number of non-zeros in w1
   
   // this count of nnz_w1 can now be used to make a new Z matrix
-  for(i=0;i<dim; i++)
+#pragma omp for  reduction(+:nnz_w2)    
+  for(int i=0;i<dim; i++)
     if(bmap[i]>0)
-      nnz_w2++;
-    
+      nnz_w2=nnz_w2+1;
+  }  
 //   cout<<"Number of non-zeros in w1 "<<nnz_w1<<" and in w2 is "<<nnz_w2<<" respectively."<<" Sum is ="<<nnz_w1+nnz_w2<<"."<<endl;
   //Allocating space for Z_lssd
   Zlssd_rows=new int[nnz_w1+nnz_w2];	Zlssd_cols=new int[nnz_w1+nnz_w2];
   Zlssd_vals= new ValueType[nnz_w1+nnz_w2];
   // use w1, w2 and Z_CSR_subdomain to generate Z_COO_LSSD
-  col_ctr=0;
-  for(i=0,j=0;i<nnz_orig;i++){
-    complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
-    if(((ValueType)complementval)*Zsubd_vals[i])
-    {
-      Zlssd_rows[j]=Zsubd_rows[i];	Zlssd_cols[j]=Zsubd_cols[i];	Zlssd_vals[j]=Zsubd_vals[i];
-      j++;
-      if(Zsubd_cols[i]>col_ctr)
-	col_ctr=Zsubd_cols[i];
-    }
-  }// we have included w1 in Zlssd
+// #pragma omp parallel
+//   {  
+  col_ctr=0; j=0;
+//   omp_set_num_threads(omp_get_max_threads());
+//   #pragma omp for reduction(+:j)
+    for(int i=0;i<nnz_orig;i++){
+      int complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
+      if(((ValueType)complementval)*Zsubd_vals[i])
+      {
+	Zlssd_rows[j]=Zsubd_rows[i];	Zlssd_cols[j]=Zsubd_cols[i];	Zlssd_vals[j]=Zsubd_vals[i];
+	j=j+1;
+	if(Zsubd_cols[i]>col_ctr)
+	  col_ctr=Zsubd_cols[i];
+      }
+    }// we have included w1 in Zlssd
+//   }
   maxcol_w1=col_ctr+1;
   col_ctr=maxcol_w1;
 //  cout<<"Number of columns from w1 is "<<col_ctr<<". Entries added for w1 ="<<j<<"."<<endl;
@@ -557,28 +572,33 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
  
   numbub_pervec= new int[col_ctr*(maxbmap+1)]; 
 // #pragma omp parallel for 
+#pragma omp parallel
+  {  
+    omp_set_num_threads(omp_get_max_threads());
+#pragma omp for
   for(j=0;j<col_ctr*(maxbmap+1);j++)
     numbub_pervec[j]=0;
+  }
   //calculate which levels in bmap exist in which vectors.
   // can be more than one level per vector or none
-// #pragma omp parallel for 
+
+#pragma omp parallel
+  {  
+    omp_set_num_threads(omp_get_max_threads());
+//     printf("\n Number of threads for openMP %d", omp_get_num_threads());
+#pragma omp for    
   for(j=0;j<dim;j++)
     if(bmap[j]>0)
 	{
 	 vec_num=get_vecnum(j, xdim_, ydim_, zdim_, novecni_x_, novecni_y_, novecni_z_);
 	 numbub_pervec[vec_num*(maxbmap+1)+bmap[j]-1]++;
 	}
+  }
  // Assign each level in each vector a number in increasing order starting from 1.
  // This helps in counting how many levels per vector are there so the columns
  // can be added serially.
-//    for(k=0;k<col_ctr;k++)
-//    {
-//      for(j=0;j<maxbmap;j++)
-//	printf("%d ",numbub_pervec[k*(maxbmap+1)+j]);
-//      printf("_+_-> %d ",numbub_pervec[k*(maxbmap+1)+j]);
-//      printf("\n");
-//    }
-//  printf("\n*********************************\n");
+
+// #pragma omp parallel for 
   for(j=0;j<col_ctr;j++)
   {
    posval=1;
@@ -589,8 +609,7 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
            ++posval;
          }
          // calculate cumulative sum of each vector's number of levels and store in last index (maxbmap+1)
-    //if(j>0)// not needed
-      numbub_pervec[j*(maxbmap+1)+maxbmap]=numbub_pervec[(j-1)*(maxbmap+1)+maxbmap]+posval-1;
+    numbub_pervec[j*(maxbmap+1)+maxbmap]=numbub_pervec[(j-1)*(maxbmap+1)+maxbmap]+posval-1;
 
   }  
 //   for(k=0;k<col_ctr;k++)
@@ -605,14 +624,17 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
    // Finding maximum columns' value 
    // (cumulative sum of all columns possible in vectors + no. of levels in last vector)
    totalmax= maxcol_w1-1 + numbub_pervec[(maxcol_w1-1)*(maxbmap+1)+maxbmap];
-//    printf("\n Total number of columns is %d",totalmax+1);
    // 1 is added to make it no. of columns rather than idex in C
 
 //Make new columns ins Z_lssd minus the column with largest value    
 //removing 1 column to avoid possibility that 1 belongs to Row space(Zlssd)
 //#pragma omp parallel for  
-//   fp=fopen("colids_w2_new.rec","wt");
-  for(j=0,i=save_idx;j<dim;++j)
+
+   
+
+    i=save_idx;
+    
+  for(int j=0;j<dim;++j)
     if(bmap[j]>0)
 	{
 	  vec_num=get_vecnum(j, xdim_, ydim_, zdim_, novecni_x_, novecni_y_, novecni_z_);
@@ -621,22 +643,14 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
 		    maxcol_w1-1 +
 		    expr;
           if(colidx==totalmax)
-            ++rem_frm_w2;
+            rem_frm_w2=rem_frm_w2+1;
           else{ 
 	  Zlssd_rows[i] = j;	Zlssd_cols[i]=colidx;
-          
-//          fprintf(fp,"(%d,%d) %d + %d + %d = %d\n",vec_num, bmap[j]-1,
-// 						numbub_pervec[vec_num*(maxbmap+1)+(bmap[j]-1)],  maxcol_w1-1 ,
-// 						 expr, Zlssd_cols[i]);
 	  Zlssd_vals[i] = (ValueType)1.0f;
-          ++i;
+          i=i+1;
           }
        }
-//   fclose(fp);
-/* fp=fopen("Z_lssd_new_w1w2.rec","wt");
- for(i=0;i<nnz_w1+nnz_w2;i++)
-   fprintf(fp,"%d %d %0.2f\n",Zlssd_rows[i], Zlssd_cols[i], Zlssd_vals[i]);
- fclose(fp);*/ 
+  
 //   printf("\n non-zeros removed are %d. originally were %d. Setting cols=%d",rem_frm_w2, nnz_w1+nnz_w2, totalmax);  
   this->Z_.Clear();
   this->Z_.SetDataPtrCOO(&Zlssd_rows, &Zlssd_cols, &Zlssd_vals, "Zlssd", nnz_w1+nnz_w2-rem_frm_w2, this->op_->get_nrow(),totalmax);

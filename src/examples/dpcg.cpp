@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
   info_paralution();
 
   struct timeval now;
-  double tick, tack, b,s, sol_norm, diff_norm, ones_norm;
+  double tick, tack, b=0.0f,s=0.0f, lprep=0.0f, sol_norm, diff_norm, ones_norm;
   double *phi_ptr=NULL;
   int *bubmap_ptr=NULL, phisize, maxbmap, setlssd, lvst_offst;
   int xdim, ydim, zdim, defvex_perdirec, defvex_perdirec_y, defvex_perdirec_z;
@@ -133,8 +133,15 @@ int main(int argc, char* argv[]) {
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
 #endif  
+  gettimeofday(&now, NULL);
+  tack = now.tv_sec*1000000.0+(now.tv_usec);
+  lprep=(tack-tick)/1000000
+  std::cout << "levelset_prep" << lprep << " sec" << std::endl;
+  b=b+lprep;
   // Linear Solver
-  
+//   return 0;
+  gettimeofday(&now, NULL);
+  tick = now.tv_sec*1000000.0+(now.tv_usec);
  
 #ifdef SCALIN
   
@@ -174,7 +181,7 @@ int main(int argc, char* argv[]) {
   b=(tack-tick)/1000000;
   std::cout << "Building:" << b << " sec" << std::endl;
   
-  ls.Verbose(2);
+//   ls.Verbose(2);
 
   mat.info();
 
