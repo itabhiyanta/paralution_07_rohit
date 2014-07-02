@@ -524,10 +524,11 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   this->Z_.LeaveDataPtrCOO(&Zsubd_rows, &Zsubd_cols, &Zsubd_vals);
   // getting arrays of Z into pointers.
   dim=this->op_->get_nrow();
+  omp_set_num_threads(omp_get_max_threads());
 #pragma omp parallel
   {
     nnz_w1=0;
-    omp_set_num_threads(omp_get_max_threads());
+    
 #pragma omp for reduction(+:nnz_w1)  
     for(int i=0;i<nnz_orig;i++){
       int complementval;
@@ -571,20 +572,21 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   save_idx=j;// saving the index from the last set of vectors
  
   numbub_pervec= new int[col_ctr*(maxbmap+1)]; 
-// #pragma omp parallel for 
+
+  omp_set_num_threads(omp_get_max_threads());
 #pragma omp parallel
   {  
-    omp_set_num_threads(omp_get_max_threads());
+    
 #pragma omp for
   for(j=0;j<col_ctr*(maxbmap+1);j++)
     numbub_pervec[j]=0;
   }
   //calculate which levels in bmap exist in which vectors.
   // can be more than one level per vector or none
-
+omp_set_num_threads(omp_get_max_threads());
 #pragma omp parallel
   {  
-    omp_set_num_threads(omp_get_max_threads());
+    
 //     printf("\n Number of threads for openMP %d", omp_get_num_threads());
 #pragma omp for    
   for(j=0;j<dim;j++)

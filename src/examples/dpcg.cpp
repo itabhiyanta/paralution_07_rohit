@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
 #endif  
   gettimeofday(&now, NULL);
   tack = now.tv_sec*1000000.0+(now.tv_usec);
-  lprep=(tack-tick)/1000000
+  lprep=(tack-tick)/1000000;
   std::cout << "levelset_prep" << lprep << " sec" << std::endl;
   b=b+lprep;
   // Linear Solver
