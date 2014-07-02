@@ -61,6 +61,7 @@
 #include "solvers/multigrid/multigrid.hpp"
 #include "solvers/multigrid/multigrid_amg.hpp"
 #include "solvers/deflation/dpcg.hpp"
+#include "solvers/deflation/dpcg_for_dg.hpp"
 #include "solvers/direct/inversion.hpp"
 #include "solvers/direct/lu.hpp"
 #include "solvers/direct/qr.hpp"

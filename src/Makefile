@@ -109,7 +109,7 @@ PARALUTION_INC =-I.
 
 HOST_OBJ = base/host/host_matrix_csr.o base/host/host_matrix_coo.o base/host/host_matrix_dia.o base/host/host_matrix_ell.o base/host/host_matrix_hyb.o base/host/host_matrix_dense.o base/host/host_matrix_mcsr.o base/host/host_matrix_bcsr.o base/host/host_vector.o base/host/host_conversion.o base/host/host_affinity.o
 
-OBJ = $(OCL_OBJ) $(CUDA_OBJ) $(HOST_OBJ) $(MIC_OBJ) base/base_paralution.o base/operator.o base/vector.o base/local_matrix.o base/global_matrix.o base/global_stencil.o base/local_stencil.o base/local_vector.o base/global_vector.o base/base_matrix.o  base/base_vector.o  base/backend_manager.o  ../thirdparty/matrix-market/mmio.o solvers/direct/inversion.o solvers/direct/lu.o solvers/direct/qr.o solvers/mixed_precision.o solvers/krylov/cg.o solvers/krylov/cr.o solvers/krylov/minres.o solvers/krylov/idr.o solvers/krylov/bicgstab.o solvers/krylov/gmres.o solvers/krylov/fgmres.o solvers/deflation/dpcg.o solvers/solver.o solvers/multigrid/multigrid.o solvers/chebyshev.o solvers/iter_ctrl.o solvers/preconditioners/preconditioner.o solvers/preconditioners/preconditioner_multielimination.o solvers/preconditioners/preconditioner_multicolored.o solvers/preconditioners/preconditioner_multicolored_gs.o solvers/preconditioners/preconditioner_multicolored_ilu.o solvers/multigrid/multigrid.o solvers/multigrid/multigrid_amg.o solvers/preconditioners/preconditioner_saddlepoint.o solvers/preconditioners/preconditioner_blockprecond.o solvers/preconditioners/preconditioner_ai.o solvers/preconditioners/preconditioner_as.o utils/allocate_free.o utils/math_functions.o utils/time_functions.o
+OBJ = $(OCL_OBJ) $(CUDA_OBJ) $(HOST_OBJ) $(MIC_OBJ) base/base_paralution.o base/operator.o base/vector.o base/local_matrix.o base/global_matrix.o base/global_stencil.o base/local_stencil.o base/local_vector.o base/global_vector.o base/base_matrix.o  base/base_vector.o  base/backend_manager.o  ../thirdparty/matrix-market/mmio.o solvers/direct/inversion.o solvers/direct/lu.o solvers/direct/qr.o solvers/mixed_precision.o solvers/krylov/cg.o solvers/krylov/cr.o solvers/krylov/minres.o solvers/krylov/idr.o solvers/krylov/bicgstab.o solvers/krylov/gmres.o solvers/krylov/fgmres.o solvers/deflation/dpcg.o solvers/deflation/dpcg_for_dg.o solvers/solver.o solvers/multigrid/multigrid.o solvers/chebyshev.o solvers/iter_ctrl.o solvers/preconditioners/preconditioner.o solvers/preconditioners/preconditioner_multielimination.o solvers/preconditioners/preconditioner_multicolored.o solvers/preconditioners/preconditioner_multicolored_gs.o solvers/preconditioners/preconditioner_multicolored_ilu.o solvers/multigrid/multigrid.o solvers/multigrid/multigrid_amg.o solvers/preconditioners/preconditioner_saddlepoint.o solvers/preconditioners/preconditioner_blockprecond.o solvers/preconditioners/preconditioner_ai.o solvers/preconditioners/preconditioner_as.o utils/allocate_free.o utils/math_functions.o utils/time_functions.o
 
 
 default: lib
@@ -281,6 +281,9 @@ solvers/krylov/idr.o: solvers/krylov/idr.cpp solvers/krylov/idr.hpp
 
 solvers/deflation/dpcg.o: solvers/deflation/dpcg.cpp solvers/deflation/dpcg.hpp
 	$(CC) $(CFLAGS) $(SUPPORT_LIB) -c solvers/deflation/dpcg.cpp -o solvers/deflation/dpcg.o
+
+solvers/deflation/dpcg_for_dg.o: solvers/deflation/dpcg_for_dg.cpp solvers/deflation/dpcg_for_dg.hpp
+	$(CC) $(CFLAGS) $(SUPPORT_LIB) -c solvers/deflation/dpcg_for_dg.cpp -o solvers/deflation/dpcg_for_dg.o
 
 solvers/solver.o: solvers/solver.cpp solvers/solver.hpp
 	$(CC) $(CFLAGS) $(SUPPORT_LIB) -c solvers/solver.cpp -o solvers/solver.o
