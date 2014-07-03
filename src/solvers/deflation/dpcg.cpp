@@ -281,7 +281,7 @@ template <class OperatorType, class VectorType, typename ValueType>
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::MakeZ_CSR(void) {
 
-  int nrow = this->op_->get_nrow();	FILE *fp, *fp1;
+  int nrow = this->op_->get_nrow();	//FILE *fp, *fp1;
   int nrows, ncols, part, i,j,column;
   int cntr=0, d_idx, d_idy, d_idz, nnz_Zsd, numvecs;
   int *Z_row_offset = NULL;  int *Z_col = NULL;  ValueType *Z_val = NULL;
@@ -509,12 +509,12 @@ void DPCG<OperatorType, VectorType, ValueType>::SetZ(LocalMatrix<ValueType> &Zin
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const int maxbmap){
   // Z sub-domain and bubmap are assumed to have been made already 
-  int *Zsubd_rows=NULL, *Zsubd_cols=NULL, i, complementval, j, vec_num,k;
+  int *Zsubd_rows=NULL, *Zsubd_cols=NULL, i, j, vec_num,k;
   
   int save_idx, rem_frm_w2=0,posval, totalmax, colidx, expr;
   int nnz_w2=0, nnz_w1=0, col_ctr, nnz_orig, dim;
   int *Zlssd_rows=NULL, *Zlssd_cols=NULL, *numbub_pervec=NULL, maxcol_w1;
- FILE *fp, *fp1;
+//  FILE *fp, *fp1;
   ValueType *Zsubd_vals=NULL, *Zlssd_vals=NULL;
   //cout<<"The non zeros in Z are "<<this->Z_.get_nnz()<<endl;
   nnz_orig=this->Z_.get_nnz();
@@ -611,7 +611,10 @@ omp_set_num_threads(omp_get_max_threads());
            ++posval;
          }
          // calculate cumulative sum of each vector's number of levels and store in last index (maxbmap+1)
-    numbub_pervec[j*(maxbmap+1)+maxbmap]=numbub_pervec[(j-1)*(maxbmap+1)+maxbmap]+posval-1;
+         if(j==0)
+	    numbub_pervec[j*(maxbmap+1)+maxbmap]=posval-1;
+	 else
+	    numbub_pervec[j*(maxbmap+1)+maxbmap]=numbub_pervec[(j-1)*(maxbmap+1)+maxbmap]+posval-1;
 
   }  
 //   for(k=0;k<col_ctr;k++)
@@ -656,12 +659,9 @@ omp_set_num_threads(omp_get_max_threads());
 //   printf("\n non-zeros removed are %d. originally were %d. Setting cols=%d",rem_frm_w2, nnz_w1+nnz_w2, totalmax);  
   this->Z_.Clear();
   this->Z_.SetDataPtrCOO(&Zlssd_rows, &Zlssd_cols, &Zlssd_vals, "Zlssd", nnz_w1+nnz_w2-rem_frm_w2, this->op_->get_nrow(),totalmax);
-  //convert Z_COO LSSD to Z_CSR LSSD
-  //this->ZLSSD_.ConvertToCSR();
-  //this->Z_.WriteFileMTX("ZLSSD_2sd.rec");
+  
   this->Z_.ConvertToCSR();
-//   this->Z_.WriteFileMTX("Zcsr_new_lssd.rec");
-//   this->Z_.MoveToAccelerator();
+
   delete [] numbub_pervec;
 }
 template <class OperatorType, class VectorType, typename ValueType>
@@ -967,6 +967,9 @@ void DPCG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const VectorTyp
   ValueType check_residual = 0.0;
 
   // initial residual = b - Ax
+//   x->info();
+//   r->info();
+//   op->info();
   op->Apply(*x, r); 
   r->ScaleAdd(ValueType(-1.0), rhs);
 

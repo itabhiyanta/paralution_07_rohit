@@ -145,7 +145,7 @@ int bubmap_create(const double *phi, int *bubmap, const int xdim, const int ydim
   //FILE *fp;  int i;
   makebubmap(xdim, ydim, zdim, dim, phi, bubmap, 0, lvst_offst);
   *maxbmap=fixbubmap(bubmap, xdim, dim);
-  printf("\n maxbmap is %d",*maxbmap);
+//   printf("\n maxbmap is %d",*maxbmap);
 //   fp=fopen("bubmap_par_128_9bub.rec","wt");
 //   for(i=0;i<dim;i++)
 //     fprintf(fp,"%d \n",bubmap[i]);
@@ -160,8 +160,8 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 {
     int j,k;
     int decide, phin_x, phin_y, phin_z, *submap, *all_nayburs; //char name[20];
-    int max_threads, num_procs;
-    FILE *fp;
+//    int max_threads, num_procs;
+//     FILE *fp;
     double *phimap;
     submap	=(int*)calloc(dim,sizeof(int));
     phimap	=(double*)calloc(dim,sizeof(double));
@@ -356,7 +356,7 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 {
   int storectr, index, *store; char maxbmap;//name[20], 
   store=(int*)calloc(maxnumbubs,sizeof(int));
-  FILE *fp;
+//   FILE *fp;
   //memset(store,0,sizeof(int)*maxnumbubs);//setting to zeros
   omp_set_num_threads(omp_get_max_threads());
 #pragma omp parallel   
