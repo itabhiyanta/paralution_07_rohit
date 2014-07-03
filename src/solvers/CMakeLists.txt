@@ -35,6 +35,7 @@ set(SOLVERS_SOURCES
   multigrid/multigrid.cpp
   multigrid/multigrid_amg.cpp
   deflation/dpcg.cpp
+  deflation/dpcg_fo_dg.cpp
   direct/inversion.cpp
   direct/lu.cpp
   direct/qr.cpp
@@ -64,6 +65,7 @@ set(SOLVERS_PUBLIC_HEADERS
   multigrid/multigrid.hpp
   multigrid/multigrid_amg.hpp
   deflation/dpcg.hpp
+  deflation/dpcg_for_dg.hpp
   direct/inversion.hpp
   direct/lu.hpp
   direct/qr.hpp
