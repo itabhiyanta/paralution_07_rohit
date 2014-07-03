@@ -35,7 +35,7 @@ set(SOLVERS_SOURCES
   multigrid/multigrid.cpp
   multigrid/multigrid_amg.cpp
   deflation/dpcg.cpp
-  deflation/dpcg_fo_dg.cpp
+  deflation/dpcg_for_dg.cpp
   direct/inversion.cpp
   direct/lu.cpp
   direct/qr.cpp
