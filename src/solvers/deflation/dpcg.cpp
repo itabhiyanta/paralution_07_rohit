@@ -525,11 +525,11 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
   // getting arrays of Z into pointers.
   dim=this->op_->get_nrow();
   omp_set_num_threads(omp_get_max_threads());
-#pragma omp parallel
-  {
+//#pragma omp parallel
+//  {
     nnz_w1=0;
     
-#pragma omp for reduction(+:nnz_w1)  
+//#pragma omp for reduction(+:nnz_w1)  
     for(int i=0;i<nnz_orig;i++){
       int complementval;
       complementval=1-(bmap[Zsubd_rows[i]]>0?1:0);
@@ -540,11 +540,11 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
     }//calculated number of non-zeros in w1
   
   // this count of nnz_w1 can now be used to make a new Z matrix
-#pragma omp for  reduction(+:nnz_w2)    
+//#pragma omp for  reduction(+:nnz_w2)    
   for(int i=0;i<dim; i++)
     if(bmap[i]>0)
       nnz_w2=nnz_w2+1;
-  }  
+ // }  
 //   cout<<"Number of non-zeros in w1 "<<nnz_w1<<" and in w2 is "<<nnz_w2<<" respectively."<<" Sum is ="<<nnz_w1+nnz_w2<<"."<<endl;
   //Allocating space for Z_lssd
   Zlssd_rows=new int[nnz_w1+nnz_w2];	Zlssd_cols=new int[nnz_w1+nnz_w2];
