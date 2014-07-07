@@ -238,7 +238,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const Ve
 
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const VectorType &rhs,
-                                                            VectorType *x, LocalMatrix<ValueType> &A0_in) {
+                                                            VectorType *x) {
    assert(x != NULL);
    assert(x != &rhs);
    assert(this->op_  != NULL);
@@ -274,7 +274,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    
    this->ls_inner_.Init(0,1e-6,1e+8,2000);
 //   ilu_p.Init(0);
-   //******************************PROBLEM*********************
+   
    this->ls_inner_.SetOperator(this->A0_);
 //   ls.SetPreconditioner(ilu_p);
    this->ls_inner_.Build();
@@ -285,7 +285,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    rhs.multiply_with_R(*w2,m_local);
    w3->Zeros();
    //const VectorType *w2cnst = &this->w2_;
-   //******************************PROBLEM*********************
+   
    this->ls_inner_.Solve(*w2, w3);
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);
@@ -296,7 +296,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    w2->Zeros();
    Ptx->multiply_with_R(*w2,m_local);
    w3->Zeros();
-   //******************************PROBLEM*********************
+   
    this->ls_inner_.Solve(*w2,w3);
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);
@@ -323,7 +323,6 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    w1->multiply_with_R(*w2,m_local);
   
    w3->Zeros();
-   //******************************PROBLEM*********************
    this->ls_inner_.Solve(*w2,w3);
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);

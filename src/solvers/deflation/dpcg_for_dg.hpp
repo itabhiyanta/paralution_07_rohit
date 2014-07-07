@@ -19,7 +19,7 @@ protected:
   virtual void SolveNonPrecond_(const VectorType &rhs,
                                 VectorType *x);
   virtual void SolvePrecond_(const VectorType &rhs,
-                             VectorType *x, LocalMatrix<ValueType> &A0);
+                             VectorType *x);
   virtual void PrintStart_(void) const;
   virtual void PrintEnd_(void) const;
   virtual void MoveToHostLocalData_(void);
