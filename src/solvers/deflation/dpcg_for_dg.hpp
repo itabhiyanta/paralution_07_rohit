@@ -26,7 +26,7 @@ protected:
   virtual void MoveToAcceleratorLocalData_(void);
   
 private:
-//   OperatorType A0_;
+  OperatorType A0_;
   VectorType r_, w_;
   VectorType p_, y_;
 
@@ -40,7 +40,7 @@ private:
   int ydim_, zdim_;
   int val_lvst_offst_;
   int size_A0_, m_, A0_nrows_;
-  CG<LocalMatrix<double>, LocalVector<double>, double > ls_inner_;
+  CG<OperatorType, VectorType, ValueType> ls_inner_;
 };
   
 

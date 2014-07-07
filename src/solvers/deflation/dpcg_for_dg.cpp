@@ -87,10 +87,10 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::PrintEnd_(void) const {
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SetA0_and_m(LocalMatrix<ValueType> &A0_in,
 							       const int val_m){
-  //assert(this->op_ != NULL);
-//     this->A0_.CopyFrom(A0_in);
-//     std::cout<<"No. of non-zeros in A0 is "<<this->A0_.get_nnz()<<endl;
-//     this->A0_nrows_= this->A0_.get_nrow();
+//   assert(this->op_ != NULL);
+    this->A0_.CopyFrom(A0_in);
+    std::cout<<"No. of non-zeros in A0 is "<<this->A0_.get_nnz()<<endl;
+    this->A0_nrows_= this->A0_.get_nrow();
     assert(val_m > 0);
     this->m_ = val_m;
 }
@@ -173,7 +173,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Clear(void) {
     this->Qb_.Clear();
     this->Ptx_.Clear();
     this->Dinv_.Clear();
-//     this->A0_.Clear();
+    this->A0_.Clear();
     this->iter_ctrl_.Clear();
     
    
@@ -199,7 +199,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToHostLocalData_(void
     this->Qb_.MoveToHost();
     this->Ptx_.MoveToHost();
     this->Dinv_.MoveToHost();
-//     this->A0_.MoveToHost();
+    this->A0_.MoveToHost();
     if (this->precond_ != NULL)
       this->precond_->MoveToHost();
   }
@@ -224,7 +224,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToAcceleratorLocalDat
     this->Qb_.MoveToAccelerator();
     this->Ptx_.MoveToAccelerator();
     this->Dinv_.MoveToAccelerator();
-//     this->A0_.MoveToAccelerator();
+    this->A0_.MoveToAccelerator();
     if (this->precond_ != NULL)
       this->precond_->MoveToAccelerator();
   } 
@@ -265,19 +265,17 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    ValueType rho, rho_old;
    ValueType res_norm = 0.0, b_norm = 1.0;
    ValueType check_residual = 0.0;  
-   LocalVector<ValueType> w1_chk;
-   LocalVector<ValueType> w2_chk;
-   w1_chk.Allocate("w1_chk", this->op_->get_nrow());
-   w2_chk.Allocate("w2_chk", this->op_->get_nrow());
+//    LocalVector<ValueType> w1_chk;
+//    LocalVector<ValueType> w2_chk;
+//    w1_chk.Allocate("w1_chk", this->op_->get_nrow());
+//    w2_chk.Allocate("w2_chk", this->op_->get_nrow());
    int m_local=this->m_;
   
-   LocalMatrix<ValueType> A0;
-   A0.CopyFrom(A0_in);
    
    this->ls_inner_.Init(0,1e-6,1e+8,2000);
 //   ilu_p.Init(0);
    //******************************PROBLEM*********************
-   this->ls_inner_.SetOperator(A0);
+   this->ls_inner_.SetOperator(this->A0_);
 //   ls.SetPreconditioner(ilu_p);
    this->ls_inner_.Build();
    this->ls_inner_.Verbose(0);
@@ -288,7 +286,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    w3->Zeros();
    //const VectorType *w2cnst = &this->w2_;
    //******************************PROBLEM*********************
-//    this->ls_inner_.Solve(w1_chk, &w2_chk);
+   this->ls_inner_.Solve(*w2, w3);
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);
    Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
@@ -299,7 +297,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    Ptx->multiply_with_R(*w2,m_local);
    w3->Zeros();
    //******************************PROBLEM*********************
-//    this->ls_inner_.Solve(*w2,w3);
+   this->ls_inner_.Solve(*w2,w3);
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);
    x->AddScale(*w4,(ValueType)-1.0);
@@ -326,7 +324,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
   
    w3->Zeros();
    //******************************PROBLEM*********************
-//    this->ls_inner_.Solve(*w2,w3);
+   this->ls_inner_.Solve(*w2,w3);
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);
    y->ScaleAdd(alpha,*w4);
@@ -371,7 +369,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
     
      w3->Zeros();
      //******************************PROBLEM*********************
-//      this->ls_inner_.Solve(*w2,w3);
+     this->ls_inner_.Solve(*w2,w3);
      w4->Zeros();
      w3->multiply_with_Rt(*w4,m_local);
      y->ScaleAdd(alpha,*w4);
