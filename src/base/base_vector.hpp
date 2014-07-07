@@ -132,9 +132,9 @@ public:
   /// Perform vector update of type this = alpha*this + x
   virtual void ScaleAdd(const ValueType alpha, const BaseVector<ValueType> &x) = 0;
   
-  virtual void multiply_with_R(BaseVector<ValueType> &x, const int alpha) = 0;
+  virtual void multiply_with_R(BaseVector<ValueType> &x, const int alpha) const = 0;
   
-  virtual void multiply_with_Rt(BaseVector<ValueType> &x, const int alpha) = 0;
+  virtual void multiply_with_Rt(BaseVector<ValueType> &x, const int alpha) const = 0;
   
   /// Perform vector update of type this = alpha*this + x*beta
   virtual void ScaleAddScale(const ValueType alpha, const BaseVector<ValueType> &x, 

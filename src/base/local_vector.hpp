@@ -138,8 +138,8 @@ public:
 
   virtual void AddScale(const LocalVector<ValueType> &x, const ValueType alpha);
   virtual void ScaleAdd(const ValueType alpha, const LocalVector<ValueType> &x);
-  virtual void multiply_with_R(LocalVector<ValueType> &x, const int alpha);
-  virtual void multiply_with_Rt(LocalVector<ValueType> &x, const int alpha);
+  virtual void multiply_with_R(LocalVector<ValueType> &x, const int alpha) const ;
+  virtual void multiply_with_Rt(LocalVector<ValueType> &x, const int alpha) const ;
   virtual void ScaleAddScale(const ValueType alpha, const LocalVector<ValueType> &x, const ValueType beta);
   virtual void ScaleAddScale(const ValueType alpha, const LocalVector<ValueType> &x, const ValueType beta,
                              const int src_offset,

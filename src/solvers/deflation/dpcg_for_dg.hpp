@@ -1,7 +1,8 @@
 #ifndef PARALUTION_DEFLATION_DPCG_FOR_DG_HPP_
 #define PARALUTION_DEFLATION_DPCG_FOR_DG_HPP_
 #include "../solver.hpp"
-
+#include "../krylov/cg.hpp"
+// #include <paralution.hpp>
 namespace paralution {
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -18,14 +19,14 @@ protected:
   virtual void SolveNonPrecond_(const VectorType &rhs,
                                 VectorType *x);
   virtual void SolvePrecond_(const VectorType &rhs,
-                             VectorType *x);
+                             VectorType *x, LocalMatrix<ValueType> &A0);
   virtual void PrintStart_(void) const;
   virtual void PrintEnd_(void) const;
   virtual void MoveToHostLocalData_(void);
   virtual void MoveToAcceleratorLocalData_(void);
   
 private:
-  OperatorType  A0_;
+//   OperatorType A0_;
   VectorType r_, w_;
   VectorType p_, y_;
 
@@ -39,7 +40,7 @@ private:
   int ydim_, zdim_;
   int val_lvst_offst_;
   int size_A0_, m_, A0_nrows_;
-//   CG<LocalMatrix<double>, LocalVector<double>, double > ls_inner_;
+  CG<LocalMatrix<double>, LocalVector<double>, double > ls_inner_;
 };
   
 

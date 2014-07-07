@@ -623,7 +623,7 @@ void GPUAcceleratorVector<ValueType>::ScaleAdd(const ValueType alpha, const Base
 
 
 template <typename ValueType>
-void GPUAcceleratorVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, const int m) {
+void GPUAcceleratorVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, const int m) const{
 
   if (this->get_size() > 0) {
 
@@ -647,7 +647,7 @@ void GPUAcceleratorVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, 
 }
 
 template <typename ValueType>
-void GPUAcceleratorVector<ValueType>::multiply_with_Rt( BaseVector<ValueType> &x, const int m) {
+void GPUAcceleratorVector<ValueType>::multiply_with_Rt( BaseVector<ValueType> &x, const int m) const{
 
   if (this->get_size() > 0) {
 

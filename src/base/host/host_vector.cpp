@@ -541,7 +541,7 @@ void HostVector<ValueType>::ScaleAdd(const ValueType alpha, const BaseVector<Val
 }
 
 template <typename ValueType>
-void HostVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, const int m) {
+void HostVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, const int m) const{
 
   assert(this->get_size() == x.get_size()*m);
 
@@ -557,7 +557,7 @@ void HostVector<ValueType>::multiply_with_R(BaseVector<ValueType> &x, const int 
 
 }
 template <typename ValueType>
-void HostVector<ValueType>::multiply_with_Rt(BaseVector<ValueType> &x, const int m) {
+void HostVector<ValueType>::multiply_with_Rt(BaseVector<ValueType> &x, const int m)  const{
 
   assert(this->get_size() == x.get_size()/m);
 

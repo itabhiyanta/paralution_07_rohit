@@ -74,8 +74,8 @@ public:
   virtual void ReadFileBinary(const std::string filename);
   virtual void WriteFileBinary(const std::string filename) const;
 
-  virtual void multiply_with_R(GlobalVector<ValueType> &x, const int m);
-  virtual void multiply_with_Rt(GlobalVector<ValueType> &x, const int m);
+  virtual void multiply_with_R(GlobalVector<ValueType> &x, const int m) const;
+  virtual void multiply_with_Rt(GlobalVector<ValueType> &x, const int m) const;
   
   // this = this + alpha*x
   virtual void AddScale(const GlobalVector<ValueType> &x, const ValueType alpha);

@@ -208,7 +208,7 @@ void Vector<ValueType>::PointWiseMult(const GlobalVector<ValueType> &x, const Lo
 }
 
 template <typename ValueType>
-void Vector<ValueType>::multiply_with_R(LocalVector<ValueType> &x, const int m) {
+void Vector<ValueType>::multiply_with_R(LocalVector<ValueType> &x, const int m) const {
 
   LOG_INFO("Vector<ValueType>::multiply_with_R(LocalVector<ValueType> &x, const int m)");
   LOG_INFO("Mismatched types:");
@@ -219,7 +219,7 @@ void Vector<ValueType>::multiply_with_R(LocalVector<ValueType> &x, const int m) 
 }
 
 template <typename ValueType>
-void Vector<ValueType>::multiply_with_R(GlobalVector<ValueType> &x, const int m) {
+void Vector<ValueType>::multiply_with_R(GlobalVector<ValueType> &x, const int m) const {
 
   LOG_INFO("Vector<ValueType>::multiply_with_R(GlobalVector<ValueType> &x,const int m)");
   LOG_INFO("Mismatched types:");
@@ -231,7 +231,7 @@ void Vector<ValueType>::multiply_with_R(GlobalVector<ValueType> &x, const int m)
 
 
 template <typename ValueType>
-void Vector<ValueType>::multiply_with_Rt(LocalVector<ValueType> &x, const ValueType alpha) {
+void Vector<ValueType>::multiply_with_Rt(LocalVector<ValueType> &x, const ValueType alpha) const {
 
   LOG_INFO("Vector<ValueType>::multiply_with_Rt(LocalVector<ValueType> &x, const ValueType alpha)");
   LOG_INFO("Mismatched types:");
@@ -242,7 +242,7 @@ void Vector<ValueType>::multiply_with_Rt(LocalVector<ValueType> &x, const ValueT
 }
 
 template <typename ValueType>
-void Vector<ValueType>::multiply_with_Rt(GlobalVector<ValueType> &x, const ValueType alpha) {
+void Vector<ValueType>::multiply_with_Rt(GlobalVector<ValueType> &x, const ValueType alpha) const {
 
   LOG_INFO("Vector<ValueType>::multiply_with_Rt(GlobalVector<ValueType> &x,const ValueType alpha)");
   LOG_INFO("Mismatched types:");

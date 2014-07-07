@@ -13,6 +13,8 @@
 #include "../../utils/log.hpp"
 #include "../../utils/allocate_free.hpp"
 #include "../../utils/math_functions.hpp"
+
+
 #include "omp.h"
 #include <assert.h>
 #include <math.h>
@@ -86,9 +88,9 @@ template <class OperatorType, class VectorType, typename ValueType>
 void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SetA0_and_m(LocalMatrix<ValueType> &A0_in,
 							       const int val_m){
   //assert(this->op_ != NULL);
-    this->A0_.CopyFrom(A0_in);
-    std::cout<<"No. of non-zeros in A0 is "<<this->A0_.get_nnz()<<endl;
-    this->A0_nrows_= this->A0_.get_nrow();
+//     this->A0_.CopyFrom(A0_in);
+//     std::cout<<"No. of non-zeros in A0 is "<<this->A0_.get_nnz()<<endl;
+//     this->A0_nrows_= this->A0_.get_nrow();
     assert(val_m > 0);
     this->m_ = val_m;
 }
@@ -171,7 +173,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Clear(void) {
     this->Qb_.Clear();
     this->Ptx_.Clear();
     this->Dinv_.Clear();
-    this->A0_.Clear();
+//     this->A0_.Clear();
     this->iter_ctrl_.Clear();
     
    
@@ -197,7 +199,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToHostLocalData_(void
     this->Qb_.MoveToHost();
     this->Ptx_.MoveToHost();
     this->Dinv_.MoveToHost();
-    this->A0_.MoveToHost();
+//     this->A0_.MoveToHost();
     if (this->precond_ != NULL)
       this->precond_->MoveToHost();
   }
@@ -222,7 +224,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToAcceleratorLocalDat
     this->Qb_.MoveToAccelerator();
     this->Ptx_.MoveToAccelerator();
     this->Dinv_.MoveToAccelerator();
-    this->A0_.MoveToAccelerator();
+//     this->A0_.MoveToAccelerator();
     if (this->precond_ != NULL)
       this->precond_->MoveToAccelerator();
   } 
@@ -236,7 +238,173 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const Ve
 
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const VectorType &rhs,
-                                                            VectorType *x) {
+                                                            VectorType *x, LocalMatrix<ValueType> &A0_in) {
+   assert(x != NULL);
+   assert(x != &rhs);
+   assert(this->op_  != NULL);
+   assert(this->precond_ != NULL);
+   assert(this->build_ == true);
+
+   const OperatorType *op = this->op_;
+
+   VectorType *r = &this->r_;
+   VectorType *p = &this->p_;
+   VectorType *y = &this->y_;
+   VectorType *w = &this->w_;
+
+   VectorType *w1 = &this->w1_;
+   VectorType *w2 = &this->w2_;
+   VectorType *w3 = &this->w3_;
+   VectorType *w4 = &this->w4_;
+    
+   VectorType *Qb = &this->Qb_;
+   VectorType *Ptx = &this->Ptx_;
+//    const VectorType *local_rhs = &rhs;
+    
+   ValueType beta, alpha;
+   ValueType rho, rho_old;
+   ValueType res_norm = 0.0, b_norm = 1.0;
+   ValueType check_residual = 0.0;  
+   LocalVector<ValueType> w1_chk;
+   LocalVector<ValueType> w2_chk;
+   w1_chk.Allocate("w1_chk", this->op_->get_nrow());
+   w2_chk.Allocate("w2_chk", this->op_->get_nrow());
+   int m_local=this->m_;
+  
+   LocalMatrix<ValueType> A0;
+   A0.CopyFrom(A0_in);
+   
+   this->ls_inner_.Init(0,1e-6,1e+8,2000);
+//   ilu_p.Init(0);
+   //******************************PROBLEM*********************
+   this->ls_inner_.SetOperator(A0);
+//   ls.SetPreconditioner(ilu_p);
+   this->ls_inner_.Build();
+   this->ls_inner_.Verbose(0);
+  
+   /*** making Qb ***/
+   
+   rhs.multiply_with_R(*w2,m_local);
+   w3->Zeros();
+   //const VectorType *w2cnst = &this->w2_;
+   //******************************PROBLEM*********************
+//    this->ls_inner_.Solve(w1_chk, &w2_chk);
+   w4->Zeros();
+   w3->multiply_with_Rt(*w4,m_local);
+   Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
+  
+   /*** making Ptx ***/
+   op->Apply(*x,Ptx);
+   w2->Zeros();
+   Ptx->multiply_with_R(*w2,m_local);
+   w3->Zeros();
+   //******************************PROBLEM*********************
+//    this->ls_inner_.Solve(*w2,w3);
+   w4->Zeros();
+   w3->multiply_with_Rt(*w4,m_local);
+   x->AddScale(*w4,(ValueType)-1.0);
+   x->ScaleAdd((ValueType)1.0, *Qb); // here we have x=Qb+(I-AQ)^{t}X 
+
+   /*** BEGINNING DPCG***/
+   // initial residual = b - Ax
+   op->Apply(*x, r); 
+   r->ScaleAdd(ValueType(-1.0), rhs);
+
+   // initial residual for the interation control
+   // = |res|
+   //  init_residual = this->Norm(*r);
+   
+   // apply deflation
+   //y:=omega*M^{-1}r // omega kept as 1
+   //y:= y + Q*(r-Ay)
+   this->precond_->SolveZeroSol(*r, y);
+   
+   op->Apply(*y,w1);
+   w1->ScaleAdd((ValueType)-1.0f, *r);
+   w2->Zeros();	
+   w1->multiply_with_R(*w2,m_local);
+  
+   w3->Zeros();
+   //******************************PROBLEM*********************
+//    this->ls_inner_.Solve(*w2,w3);
+   w4->Zeros();
+   w3->multiply_with_Rt(*w4,m_local);
+   y->ScaleAdd(alpha,*w4);
+   ////p=y
+   p->CopyFrom(*y,0,0,this->op_->get_nrow());
+  
+   // initial residual for the interation control
+   // = |res| / |b|
+   res_norm = this->Norm(*r);
+   b_norm = this->Norm(rhs);
+  
+
+   this->iter_ctrl_.InitResidual(b_norm);
+
+   // w = Ap
+   op->Apply(*p, w);
+
+   rho=r->Dot(*y);
+   
+   // alpha = rho / (p,w)
+   alpha=rho/p->Dot(*w);
+
+   // x = x + alpha * p
+   x->AddScale(*p, alpha);
+
+   // r = r - alpha * w
+   r->AddScale(*w, alpha*ValueType(-1.0));
+
+   res_norm = this->Norm(*r);
+   check_residual = res_norm; 
+
+   while (!this->iter_ctrl_.CheckResidual(check_residual)) {
+
+     //Apply deflation
+
+     this->precond_->SolveZeroSol(*r, y);
+    
+     op->Apply(*y,w1);
+     w1->ScaleAdd((ValueType)-1.0, *r);
+     w2->Zeros();	
+     w1->multiply_with_R(*w2,m_local);
+    
+     w3->Zeros();
+     //******************************PROBLEM*********************
+//      this->ls_inner_.Solve(*w2,w3);
+     w4->Zeros();
+     w3->multiply_with_Rt(*w4,m_local);
+     y->ScaleAdd(alpha,*w4);
+     
+     rho_old = rho;
+
+     // rho = (r,y)
+     rho = r->Dot(*y);
+
+     beta = rho / rho_old;
+
+     // p = p + beta * y
+     p->ScaleAdd(beta, *y);
+
+     // w = Ap
+     op->Apply(*p, w);
+       // at this point save alpha and beta
+ //   lanczos<<setprecision(16)<<alpha<<" "<<setprecision(16)<<beta<<" "<<endl;
+     // alpha = rho / (p,w)
+     alpha=rho/p->Dot(*w);
+
+     // x = x + alpha * p
+     x->AddScale(*p, alpha);
+
+     // r = r - alpha * w
+     r->AddScale(*w, alpha*ValueType(-1.0));
+
+     res_norm = this->Norm(*r);
+     check_residual = res_norm; 
+   }
+
+    this->ls_inner_.Clear();
+    
 }
 
 template class DPCG_FOR_DG< LocalMatrix<double>, LocalVector<double>, double >;

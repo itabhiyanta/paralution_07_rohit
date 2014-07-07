@@ -91,9 +91,9 @@ public:
   // this = alpha*this + x
   virtual void ScaleAdd(const ValueType alpha, const BaseVector<ValueType> &x);
   
-  virtual void multiply_with_R(BaseVector<ValueType> &x, const int m);
+  virtual void multiply_with_R(BaseVector<ValueType> &x, const int m) const;
   // multiplies input vector with R (Paulien van Slingerland Thesis (2013)) and stores it in x
-  virtual void multiply_with_Rt(BaseVector<ValueType> &x, const int m);
+  virtual void multiply_with_Rt(BaseVector<ValueType> &x, const int m) const;
   // multiplies input vector with R^{T} (Paulien van Slingerland Thesis (2013)) and stores it in x
   // 
   // this = alpha*this + x*beta
