@@ -143,11 +143,12 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Build(void) {
   this->Dinv_.CloneBackend(*this->op_);  
   this->op_->ExtractInverseDiagonal(&this->Dinv_);
   
+  this->A0_.CloneBackend(*this->op_);
   if (this->precond_ != NULL) {
     this->precond_->SetOperator(*this->op_);
     this->precond_->Build();
   } 
-  
+//   this->ls_inner_.MoveToAccelerator();
 }
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -174,6 +175,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Clear(void) {
     this->Ptx_.Clear();
     this->Dinv_.Clear();
     this->A0_.Clear();
+    this->ls_inner_.Clear();
     this->iter_ctrl_.Clear();
     
    
@@ -200,6 +202,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToHostLocalData_(void
     this->Ptx_.MoveToHost();
     this->Dinv_.MoveToHost();
     this->A0_.MoveToHost();
+    this->ls_inner_.MoveToHost();
     if (this->precond_ != NULL)
       this->precond_->MoveToHost();
   }
@@ -225,6 +228,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToAcceleratorLocalDat
     this->Ptx_.MoveToAccelerator();
     this->Dinv_.MoveToAccelerator();
     this->A0_.MoveToAccelerator();
+    this->ls_inner_.MoveToAccelerator();
     if (this->precond_ != NULL)
       this->precond_->MoveToAccelerator();
   } 
@@ -259,16 +263,12 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
     
    VectorType *Qb = &this->Qb_;
    VectorType *Ptx = &this->Ptx_;
-//    const VectorType *local_rhs = &rhs;
-    
+
    ValueType beta, alpha;
    ValueType rho, rho_old;
    ValueType res_norm = 0.0, b_norm = 1.0;
    ValueType check_residual = 0.0;  
-//    LocalVector<ValueType> w1_chk;
-//    LocalVector<ValueType> w2_chk;
-//    w1_chk.Allocate("w1_chk", this->op_->get_nrow());
-//    w2_chk.Allocate("w2_chk", this->op_->get_nrow());
+
    int m_local=this->m_;
   
    
@@ -278,15 +278,18 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    this->ls_inner_.SetOperator(this->A0_);
 //   ls.SetPreconditioner(ilu_p);
    this->ls_inner_.Build();
-   this->ls_inner_.Verbose(0);
-  
+   this->ls_inner_.Verbose(2);
+   
+//    this->ls_inner_.MoveToAccelerator();
+
    /*** making Qb ***/
    
    rhs.multiply_with_R(*w2,m_local);
    w3->Zeros();
-   //const VectorType *w2cnst = &this->w2_;
-   
+   cout<<"Norm of w2 after mult with rhs is "<<  this->Norm(*w2)<<endl; 
+   cout<<"Norm of w3 after zeros is "<<  this->Norm(*w3)<<endl; 
    this->ls_inner_.Solve(*w2, w3);
+   cout<<"Norm of w3 after solve is "<<  this->Norm(*w3)<<endl; 
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);
    Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
@@ -326,7 +329,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    this->ls_inner_.Solve(*w2,w3);
    w4->Zeros();
    w3->multiply_with_Rt(*w4,m_local);
-   y->ScaleAdd(alpha,*w4);
+   y->ScaleAdd((ValueType)1.0f,*w4);
    ////p=y
    p->CopyFrom(*y,0,0,this->op_->get_nrow());
   
@@ -350,7 +353,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    x->AddScale(*p, alpha);
 
    // r = r - alpha * w
-   r->AddScale(*w, alpha*ValueType(-1.0));
+   r->AddScale(*w, alpha*((ValueType)-1.0f));
 
    res_norm = this->Norm(*r);
    check_residual = res_norm; 
@@ -362,16 +365,15 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
      this->precond_->SolveZeroSol(*r, y);
     
      op->Apply(*y,w1);
-     w1->ScaleAdd((ValueType)-1.0, *r);
+     w1->ScaleAdd((ValueType)-1.0f, *r);
      w2->Zeros();	
      w1->multiply_with_R(*w2,m_local);
     
      w3->Zeros();
-     //******************************PROBLEM*********************
      this->ls_inner_.Solve(*w2,w3);
      w4->Zeros();
      w3->multiply_with_Rt(*w4,m_local);
-     y->ScaleAdd(alpha,*w4);
+     y->ScaleAdd((ValueType)1.0f,*w4);
      
      rho_old = rho;
 
@@ -394,13 +396,13 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
      x->AddScale(*p, alpha);
 
      // r = r - alpha * w
-     r->AddScale(*w, alpha*ValueType(-1.0));
+     r->AddScale(*w, alpha*((ValueType)-1.0f));
 
      res_norm = this->Norm(*r);
      check_residual = res_norm; 
    }
 
-    this->ls_inner_.Clear();
+//     this->ls_inner_.Clear();
     
 }
 
