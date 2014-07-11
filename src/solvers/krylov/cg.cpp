@@ -40,7 +40,7 @@
 
 #include <assert.h>
 #include <math.h>
-
+using namespace std;
 namespace paralution {
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -252,24 +252,24 @@ void CG<OperatorType, VectorType, ValueType>::SolveNonPrecond_(const VectorType 
 
   // p = r
   p->CopyFrom(*r);
-
+  cout<<"p->CopyFrom(*r);"<<this->Norm(*p)<<endl;
   // rho = (r,r)
   rho = r->Dot(*r);
-
+  
   // use for |b-Ax0|
   ValueType res_norm;
   res_norm = this->Norm(*r);
   this->iter_ctrl_.InitResidual(res_norm);
-
+  cout<<"Iteration control has been set to "<<res_norm<<endl;
   // use for |b|
   //  this->iter_ctrl_.InitResidual(rhs.Norm());
   
   // q=Ap
   op->Apply(*p, q);
-
+  cout<<"op->Apply(*p, q);"<<this->Norm(*q)<<endl;
   // alpha = rho / (p,q)
   alpha = rho / p->Dot(*q);
-  
+  cout<<"rho / p->Dot(*q);"<<alpha<<endl;
   // x = x + alpha*p
   x->AddScale(*p, alpha);
 

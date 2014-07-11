@@ -1319,6 +1319,8 @@ bool GPUAcceleratorMatrixCSR<double>::ICFactorize(BaseVector<double> *inv_diag) 
 template <>
 void GPUAcceleratorMatrixCSR<float>::LUAnalyse(void) {
 
+    this->LUAnalyseClear();
+    
     cusparseStatus_t stat_t;         
 
     // L part
@@ -1392,6 +1394,8 @@ void GPUAcceleratorMatrixCSR<float>::LUAnalyse(void) {
 template <>
 void GPUAcceleratorMatrixCSR<double>::LUAnalyse(void) {
 
+    this->LUAnalyseClear();
+    
     cusparseStatus_t stat_t;         
 
     // L part
@@ -1491,9 +1495,10 @@ void GPUAcceleratorMatrixCSR<ValueType>::LUAnalyseClear(void) {
   this->L_mat_info_ = 0;
   this->U_mat_info_ = 0;
     
-  delete this->tmp_vec_ ;
-  this->tmp_vec_ = NULL;
-
+  if (this ->tmp_vec_ != NULL) {
+    delete this->tmp_vec_ ;
+    this->tmp_vec_ = NULL;
+  }
 }
 
 template <>
@@ -1614,6 +1619,8 @@ bool GPUAcceleratorMatrixCSR<double>::LUSolve(const BaseVector<double> &in, Base
 template <>
 void GPUAcceleratorMatrixCSR<float>::LLAnalyse(void) {
 
+    this->LLAnalyseClear();
+    
     cusparseStatus_t stat_t;         
 
     // L part
@@ -1683,6 +1690,8 @@ void GPUAcceleratorMatrixCSR<float>::LLAnalyse(void) {
 template <>
 void GPUAcceleratorMatrixCSR<double>::LLAnalyse(void) {
 
+    this->LLAnalyseClear();
+    
     cusparseStatus_t stat_t;         
 
     // L part
@@ -1780,8 +1789,10 @@ void GPUAcceleratorMatrixCSR<ValueType>::LLAnalyseClear(void) {
   this->L_mat_info_ = 0;
   this->U_mat_info_ = 0;
     
-  delete this->tmp_vec_ ;
-  this->tmp_vec_ = NULL;
+ if (this ->tmp_vec_ != NULL) {
+    delete this->tmp_vec_ ;
+    this->tmp_vec_ = NULL;
+  }
 
 }
 

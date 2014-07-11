@@ -26,7 +26,8 @@ protected:
   virtual void MoveToAcceleratorLocalData_(void);
   
 private:
-  OperatorType A0_;
+//   OperatorType A0_;
+  LocalMatrix<ValueType> A0_;
   VectorType r_, w_;
   VectorType p_, y_;
 
