@@ -14,7 +14,7 @@
 #include "../../utils/allocate_free.hpp"
 #include "../../utils/math_functions.hpp"
 
-
+#include "../preconditioners/preconditioner.hpp"
 #include "omp.h"
 #include <assert.h>
 #include <math.h>
@@ -143,14 +143,16 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Build(void) {
   this->Dinv_.CloneBackend(*this->op_);  
   this->op_->ExtractInverseDiagonal(&this->Dinv_);
   
-  this->ls_inner_.Init(0,1e-6,1e+8,2000);
-//   ilu_p.Init(0);
+  this->ls_inner_.Init(0,1e-2,1e+8,2000);
+
   
   this->A0_.CloneBackend(*this->op_);
-  
+//   ILU<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType > ilu_p;
+//   ilu_p.Set(0);
+//   this->ls_inner_.SetPreconditioner(ilu_p);  
   this->ls_inner_.SetOperator(this->A0_);
   
-//   ls.SetPreconditioner(ilu_p);
+
   this->ls_inner_.Build();
 //  this->ls_inner_.Verbose(2);
 

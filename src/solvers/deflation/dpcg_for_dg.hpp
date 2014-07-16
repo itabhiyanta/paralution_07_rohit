@@ -41,6 +41,7 @@ private:
   int val_lvst_offst_;
   int size_A0_, m_, A0_nrows_;
   CG<OperatorType, VectorType, ValueType> ls_inner_;
+//   ILU<LocalMatrix<double>, LocalVector<double>, double > ilu_p;
 };
   
 
