@@ -13,6 +13,7 @@
 #include "../../utils/log.hpp"
 #include "../../utils/allocate_free.hpp"
 #include "../../utils/math_functions.hpp"
+#include "../../utils/time_functions.hpp"
 
 #include "../preconditioners/preconditioner.hpp"
 #include "omp.h"
@@ -143,7 +144,7 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Build(void) {
   this->Dinv_.CloneBackend(*this->op_);  
   this->op_->ExtractInverseDiagonal(&this->Dinv_);
   
-  this->ls_inner_.Init(0,1e-2,1e+8,2000);
+  this->ls_inner_.Init(0,1e-6,1e+8,2000);
 
   
   this->A0_.CloneBackend(*this->op_);
@@ -282,32 +283,44 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    ValueType rho, rho_old;
    ValueType res_norm = 0.0, b_norm = 1.0;
    ValueType check_residual = 0.0;  
-
+   double tick, tack, time_innrsolve=0.0f, time_multR_Rt=0.0f;
    int m_local=this->m_;
   
 //    this->A0_.info();
    /*** making Qb ***/
-   
+   tick = paralution_time();
    rhs.multiply_with_R(*w2,m_local);
+   tack = paralution_time();
+   time_multR_Rt+=(tack-tick)/1000000;
 //    w3->Zeros();
-//   cout<<"Norm of w2 after mult with rhs is "<<  this->Norm(*w2)<<endl; 
-//   cout<<"Norm of w3 after zeros is "<<  this->Norm(*w3)<<endl; 
-//   w2->info();	w3->info();
-//    w2->WriteFileASCII("rhs.rec");
-//    w3->WriteFileASCII("x0.rec");
+   
+   tick = paralution_time();
    this->ls_inner_.Solve(*w2, w3);
+   tack = paralution_time();
+   time_innrsolve+=(tack-tick)/1000000;
 //   cout<<"Norm of w3 after solve is "<<  this->Norm(*w3)<<endl; 
 //     w4->Zeros();
+    tick = paralution_time();
     w3->multiply_with_Rt(*w4,m_local);
+    tack = paralution_time();
+    time_multR_Rt+=(tack-tick)/1000000;
+    
     Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
 //    /*** making Ptx ***/
     op->Apply(*x,Ptx);
 //     w2->Zeros();
     Ptx->multiply_with_R(*w2,m_local);
 //     w3->Zeros();
+    tick = paralution_time();
     this->ls_inner_.Solve(*w2,w3);
+    tack = paralution_time();
+    time_innrsolve+=(tack-tick)/1000000;
 //     w4->Zeros();
+    tick = paralution_time();
     w3->multiply_with_Rt(*w4,m_local);
+    tack = paralution_time();
+    time_multR_Rt+=(tack-tick)/1000000;
+    
     x->AddScale(*w4,(ValueType)-1.0);
     x->ScaleAdd((ValueType)1.0, *Qb); // here we have x=Qb+(I-AQ)^{t}X 
 //    /*** BEGINNING DPCG***/
@@ -325,11 +338,21 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
     op->Apply(*y,w1);
     w1->ScaleAdd((ValueType)-1.0f, *r);
 //     w2->Zeros();	
+    tick = paralution_time();
     w1->multiply_with_R(*w2,m_local);
+    tack = paralution_time();
+    time_multR_Rt+=(tack-tick)/1000000;
 //     w3->Zeros();
+    tick = paralution_time();
     this->ls_inner_.Solve(*w2,w3);
+    tack = paralution_time();
+    time_innrsolve+=(tack-tick)/1000000;
 //     w4->Zeros();
+    tick = paralution_time();
     w3->multiply_with_Rt(*w4,m_local);
+    tack = paralution_time();
+    time_multR_Rt+=(tack-tick)/1000000;
+    
     y->ScaleAdd((ValueType)1.0f,*w4);
     ////p=y
     p->CopyFrom(*y,0,0,this->op_->get_nrow());
@@ -360,11 +383,22 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
       op->Apply(*y,w1);
       w1->ScaleAdd((ValueType)-1.0f, *r);
 //       w2->Zeros();	
+      tack = paralution_time();
       w1->multiply_with_R(*w2,m_local);
+      tack = paralution_time();
+      time_multR_Rt+=(tack-tick)/1000000;
+      
 //       w3->Zeros();
+      tick = paralution_time();
       this->ls_inner_.Solve(*w2,w3);
+      tack = paralution_time();
+      time_innrsolve+=(tack-tick)/1000000;
 //       w4->Zeros();
+      tick = paralution_time();
       w3->multiply_with_Rt(*w4,m_local);
+      tack = paralution_time();
+      time_multR_Rt+=(tack-tick)/1000000;
+      
       y->ScaleAdd((ValueType)1.0f,*w4);
 //      
       rho_old = rho;
@@ -389,6 +423,8 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
       check_residual = res_norm; 
     }
 
+    cout<<"Time in solving "<<time_innrsolve<<" secs"<<endl;
+    cout<<"Time in multiplying with R and Rt "<<time_multR_Rt<<" secs"<<endl;
     
 }
 
