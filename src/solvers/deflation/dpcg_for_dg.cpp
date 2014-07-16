@@ -146,18 +146,19 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Build(void) {
   this->ls_inner_.Init(0,1e-6,1e+8,2000);
 //   ilu_p.Init(0);
   
-  this->ls_inner_.SetOperator(this->A0_);
   this->A0_.CloneBackend(*this->op_);
+  
+  this->ls_inner_.SetOperator(this->A0_);
+  
 //   ls.SetPreconditioner(ilu_p);
   this->ls_inner_.Build();
-  this->ls_inner_.Verbose(2);
+//  this->ls_inner_.Verbose(2);
 
   
   if (this->precond_ != NULL) {
     this->precond_->SetOperator(*this->op_);
     this->precond_->Build();
   } 
-//   this->ls_inner_.MoveToAccelerator();
 }
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -282,134 +283,110 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
 
    int m_local=this->m_;
   
-   
-   
-   this->A0_.info();
-//    this->ls_inner_.MoveToAccelerator();
-//   this->A0_.MoveToAccelerator();
+//    this->A0_.info();
    /*** making Qb ***/
    
    rhs.multiply_with_R(*w2,m_local);
-   w3->Zeros();
-   cout<<"Norm of w2 after mult with rhs is "<<  this->Norm(*w2)<<endl; 
-   cout<<"Norm of w3 after zeros is "<<  this->Norm(*w3)<<endl; 
-   w2->info();	w3->info();
-   
-   this->ls_inner_.Solve(*w2, w3);
-   cout<<"Norm of w3 after solve is "<<  this->Norm(*w3)<<endl; 
-//    w4->Zeros();
-//    w3->multiply_with_Rt(*w4,m_local);
-//    Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
-//   
-//    /*** making Ptx ***/
-//    op->Apply(*x,Ptx);
-//    w2->Zeros();
-//    Ptx->multiply_with_R(*w2,m_local);
 //    w3->Zeros();
-//    
-//    this->ls_inner_.Solve(*w2,w3);
-//    w4->Zeros();
-//    w3->multiply_with_Rt(*w4,m_local);
-//    x->AddScale(*w4,(ValueType)-1.0);
-//    x->ScaleAdd((ValueType)1.0, *Qb); // here we have x=Qb+(I-AQ)^{t}X 
-// 
+//   cout<<"Norm of w2 after mult with rhs is "<<  this->Norm(*w2)<<endl; 
+//   cout<<"Norm of w3 after zeros is "<<  this->Norm(*w3)<<endl; 
+//   w2->info();	w3->info();
+//    w2->WriteFileASCII("rhs.rec");
+//    w3->WriteFileASCII("x0.rec");
+   this->ls_inner_.Solve(*w2, w3);
+//   cout<<"Norm of w3 after solve is "<<  this->Norm(*w3)<<endl; 
+//     w4->Zeros();
+    w3->multiply_with_Rt(*w4,m_local);
+    Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
+//    /*** making Ptx ***/
+    op->Apply(*x,Ptx);
+//     w2->Zeros();
+    Ptx->multiply_with_R(*w2,m_local);
+//     w3->Zeros();
+    this->ls_inner_.Solve(*w2,w3);
+//     w4->Zeros();
+    w3->multiply_with_Rt(*w4,m_local);
+    x->AddScale(*w4,(ValueType)-1.0);
+    x->ScaleAdd((ValueType)1.0, *Qb); // here we have x=Qb+(I-AQ)^{t}X 
 //    /*** BEGINNING DPCG***/
 //    // initial residual = b - Ax
-//    op->Apply(*x, r); 
-//    r->ScaleAdd(ValueType(-1.0), rhs);
-// 
+    op->Apply(*x, r); 
+    r->ScaleAdd(ValueType(-1.0), rhs);
 //    // initial residual for the interation control
 //    // = |res|
 //    //  init_residual = this->Norm(*r);
-//    
 //    // apply deflation
-//    //y:=omega*M^{-1}r // omega kept as 1
+    //y:=omega*M^{-1}r // omega kept as 1
 //    //y:= y + Q*(r-Ay)
-//    this->precond_->SolveZeroSol(*r, y);
-//    
-//    op->Apply(*y,w1);
-//    w1->ScaleAdd((ValueType)-1.0f, *r);
-//    w2->Zeros();	
-//    w1->multiply_with_R(*w2,m_local);
-//   
-//    w3->Zeros();
-//    this->ls_inner_.Solve(*w2,w3);
-//    w4->Zeros();
-//    w3->multiply_with_Rt(*w4,m_local);
-//    y->ScaleAdd((ValueType)1.0f,*w4);
-//    ////p=y
-//    p->CopyFrom(*y,0,0,this->op_->get_nrow());
-//   
+    this->precond_->SolveZeroSol(*r, y);
+
+    op->Apply(*y,w1);
+    w1->ScaleAdd((ValueType)-1.0f, *r);
+//     w2->Zeros();	
+    w1->multiply_with_R(*w2,m_local);
+//     w3->Zeros();
+    this->ls_inner_.Solve(*w2,w3);
+//     w4->Zeros();
+    w3->multiply_with_Rt(*w4,m_local);
+    y->ScaleAdd((ValueType)1.0f,*w4);
+    ////p=y
+    p->CopyFrom(*y,0,0,this->op_->get_nrow());
 //    // initial residual for the interation control
 //    // = |res| / |b|
-//    res_norm = this->Norm(*r);
-//    b_norm = this->Norm(rhs);
-//   
-// 
-//    this->iter_ctrl_.InitResidual(b_norm);
-// 
+    res_norm = this->Norm(*r);
+    b_norm = this->Norm(rhs);
+    this->iter_ctrl_.InitResidual(b_norm);
 //    // w = Ap
-//    op->Apply(*p, w);
+    op->Apply(*p, w);
 // 
-//    rho=r->Dot(*y);
-//    
+    rho=r->Dot(*y);
 //    // alpha = rho / (p,w)
-//    alpha=rho/p->Dot(*w);
-// 
+    alpha=rho/p->Dot(*w);
 //    // x = x + alpha * p
-//    x->AddScale(*p, alpha);
-// 
+    x->AddScale(*p, alpha);
 //    // r = r - alpha * w
-//    r->AddScale(*w, alpha*((ValueType)-1.0f));
+    r->AddScale(*w, alpha*((ValueType)-1.0f));
 // 
-//    res_norm = this->Norm(*r);
-//    check_residual = res_norm; 
+    res_norm = this->Norm(*r);
+    check_residual = res_norm; 
 // 
-//    while (!this->iter_ctrl_.CheckResidual(check_residual)) {
-// 
+    while (!this->iter_ctrl_.CheckResidual(check_residual)) {
 //      //Apply deflation
 // 
-//      this->precond_->SolveZeroSol(*r, y);
+      this->precond_->SolveZeroSol(*r, y);
 //     
-//      op->Apply(*y,w1);
-//      w1->ScaleAdd((ValueType)-1.0f, *r);
-//      w2->Zeros();	
-//      w1->multiply_with_R(*w2,m_local);
-//     
-//      w3->Zeros();
-//      this->ls_inner_.Solve(*w2,w3);
-//      w4->Zeros();
-//      w3->multiply_with_Rt(*w4,m_local);
-//      y->ScaleAdd((ValueType)1.0f,*w4);
+      op->Apply(*y,w1);
+      w1->ScaleAdd((ValueType)-1.0f, *r);
+//       w2->Zeros();	
+      w1->multiply_with_R(*w2,m_local);
+//       w3->Zeros();
+      this->ls_inner_.Solve(*w2,w3);
+//       w4->Zeros();
+      w3->multiply_with_Rt(*w4,m_local);
+      y->ScaleAdd((ValueType)1.0f,*w4);
 //      
-//      rho_old = rho;
-// 
+      rho_old = rho;
 //      // rho = (r,y)
-//      rho = r->Dot(*y);
+      rho = r->Dot(*y);
 // 
-//      beta = rho / rho_old;
-// 
+      beta = rho / rho_old;
 //      // p = p + beta * y
-//      p->ScaleAdd(beta, *y);
-// 
+      p->ScaleAdd(beta, *y);
 //      // w = Ap
-//      op->Apply(*p, w);
+      op->Apply(*p, w);
 //        // at this point save alpha and beta
 //  //   lanczos<<setprecision(16)<<alpha<<" "<<setprecision(16)<<beta<<" "<<endl;
 //      // alpha = rho / (p,w)
-//      alpha=rho/p->Dot(*w);
-// 
+      alpha=rho/p->Dot(*w);
 //      // x = x + alpha * p
-//      x->AddScale(*p, alpha);
-// 
+      x->AddScale(*p, alpha);
 //      // r = r - alpha * w
-//      r->AddScale(*w, alpha*((ValueType)-1.0f));
+      r->AddScale(*w, alpha*((ValueType)-1.0f));
 // 
-//      res_norm = this->Norm(*r);
-//      check_residual = res_norm; 
-//    }
+      res_norm = this->Norm(*r);
+      check_residual = res_norm; 
+    }
 
-//     this->ls_inner_.Clear();
     
 }
 
