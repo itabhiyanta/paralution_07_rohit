@@ -145,7 +145,7 @@ int bubmap_create(const double *phi, int *bubmap, const int xdim, const int ydim
   //FILE *fp;  int i;
   makebubmap(xdim, ydim, zdim, dim, phi, bubmap, 0, lvst_offst);
   *maxbmap=fixbubmap(bubmap, xdim, dim);
-//   printf("\n maxbmap is %d",*maxbmap);
+  printf("\n maxbmap is %d",*maxbmap);
 //   fp=fopen("bubmap_par_128_9bub.rec","wt");
 //   for(i=0;i<dim;i++)
 //     fprintf(fp,"%d \n",bubmap[i]);
@@ -197,10 +197,10 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 //     omp_set_num_threads(8);
 //     printf("\n Number of thread for openMP inside makebubmap are now %d", omp_get_num_threads());
     omp_set_num_threads(omp_get_max_threads());
-#pragma omp parallel
-    {
+// #pragma omp parallel
+//     {
       
-      #pragma omp for
+//       #pragma omp for
     for (int i=0;i<dim;i++)
       {
 	int Xcord, Ycord, Zcord, tempval, left, bottom, leftface;
@@ -218,7 +218,7 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 	  all_nayburs[i]=left;	all_nayburs[dim+i]=bottom;	all_nayburs[2*dim+i]=leftface;	
 	}
       }
-    }
+//     }
     for (int i=0;i<dim;i++)
       {
 	if(phimap[i]>=0.0){
@@ -228,11 +228,11 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
       }
 
     decide=1;
-    omp_set_num_threads(omp_get_max_threads());
-#pragma omp parallel
-    {
+//     omp_set_num_threads(omp_get_max_threads());
+// #pragma omp parallel
+//     {
       
-      #pragma omp for
+//       #pragma omp for
       for (int i=dim-1;i>=0;i--)
       {
 	int Xcord, Ycord, Zcord, tempval, right, top, rightface;
@@ -251,7 +251,7 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 	
 	}
       }
-    }
+//     }
     for (int i=dim-1;i>=0;i--)
       {
 	if(phimap[i]>=0.0){
@@ -358,15 +358,15 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
   store=(int*)calloc(maxnumbubs,sizeof(int));
 //   FILE *fp;
   //memset(store,0,sizeof(int)*maxnumbubs);//setting to zeros
-  omp_set_num_threads(omp_get_max_threads());
-#pragma omp parallel   
-  {
+//   omp_set_num_threads(omp_get_max_threads());
+// #pragma omp parallel   
+//   {
     
 //     printf("\n no. threads loop 1 of fixbubmap is %d",omp_get_num_threads());
-#pragma omp for  
+// #pragma omp for  
   for(int i=0;i<maxnumbubs;i++)
     store[i]=0;
-  }
+//   }
   storectr=0; index=0;
   // serialize bubmap give it values between 1 and number of bubbles instead of random values 
   // that come out of this code
@@ -378,11 +378,11 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 	  store[storectr++]=bubmap[i];
    }
  //  printf("\n num bubs on proc %d is %d\n",procid, numbub);
- omp_set_num_threads(omp_get_max_threads());
-#pragma omp parallel   
-{
+//  omp_set_num_threads(omp_get_max_threads());
+// #pragma omp parallel   
+// {
   
-#pragma omp for  
+// #pragma omp for  
   for(int i=0;i<dim;i++)
   {
     int index;
@@ -393,7 +393,7 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
       bubmap[i]=index+1;
     }
   }
-}
+// }
   
 //  fp=fopen("fxdbubmap_.rec","wt");
 // for(i=0;i<dim;i++)

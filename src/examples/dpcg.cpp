@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
   int xdim, ydim, zdim, defvex_perdirec, defvex_perdirec_y, defvex_perdirec_z;
   DPCG<LocalMatrix<double>, LocalVector<double>, double > ls;
 #ifdef BUBFLO  
-  xdim=atoi(argv[5]);
+  xdim=atoi(argv[5]);	ydim=atoi(argv[5]);	zdim=atoi(argv[5]);
   setlssd=atoi(argv[6]);
   defvex_perdirec=atoi(argv[7]);
   lvst_offst=atoi(argv[8]);
@@ -98,15 +98,7 @@ int main(int argc, char* argv[]) {
   //refsol.Ones();
 // 
 //   // Uncomment for GPU
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-  chk_r.MoveToAccelerator();
-  Dinvhalf_min.MoveToAccelerator();
-  Dinvhalf_plus.MoveToAccelerator();
-  
-#endif  
+
   
   gettimeofday(&now, NULL);
   tick = now.tv_sec*1000000.0+(now.tv_usec);
@@ -127,7 +119,7 @@ int main(int argc, char* argv[]) {
     
   }
   ls.Setxdim(xdim);
-  ls.SetNVectors_eachdirec(defvex_perdirec+1, defvex_perdirec+2, defvex_perdirec+3);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
   ls.Set_alldims(xdim, xdim, xdim);
   ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
@@ -168,8 +160,16 @@ int main(int argc, char* argv[]) {
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
 #endif    
 //   
-//  stop_paralution();
-//  return 0;
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  chk_r.MoveToAccelerator();
+  Dinvhalf_min.MoveToAccelerator();
+  Dinvhalf_plus.MoveToAccelerator();
+  
+#endif  
+  
   ls.Build();
 #ifdef MATDIA  
    mat.ConvertToDIA();

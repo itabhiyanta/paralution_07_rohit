@@ -26,10 +26,10 @@
 #include <paralution.hpp>
 
 #define GPURUN	4
-// #define MATDIA	1
+#define MATDIA	1
 // #define SCALIN	55
-#define GUUS	2
-// #define	BUBFLO	3
+// #define GUUS	2
+#define	BUBFLO	3
 using namespace std;
 using namespace paralution;
 
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   int *bubmap_ptr=NULL, phisize, maxbmap, setlssd, lvst_offst;
   int xdim, ydim, zdim, defvex_perdirec;
 #ifdef BUBFLO
-  xdim=atoi(argv[5]);
+  xdim=atoi(argv[5]);	ydim=atoi(argv[5]);	zdim=atoi(argv[5]);
   setlssd=atoi(argv[6]);
   defvex_perdirec=atoi(argv[7]);
   lvst_offst=atoi(argv[8]);
@@ -98,11 +98,7 @@ int main(int argc, char* argv[]) {
   
 
 
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif  
+ 
   
 #ifdef SCALIN
   mat.ExtractInverseDiagonal_sqrt(&Dinvhalf_min, -1);
@@ -143,16 +139,18 @@ int main(int argc, char* argv[]) {
      bubmap.LeaveDataPtr(&bubmap_ptr);
      phi.LeaveDataPtr(&phi_ptr);
  
-     x.SetRandom(0.0,1.0,1000);
+//      x.SetRandom(0.0,1.0,1000);
      bubmap_create(phi_ptr, bubmap_ptr, xdim, xdim, xdim, mat.get_nrow(), &maxbmap, lvst_offst);
      phi.Clear();
      
    }
-   ls.Setxdim(xdim);
-   ls.SetNVectors(defvex_perdirec);
-   ls.Setlvst_offst(lvst_offst);
-   ls.SetZlssd(setlssd);
-   mat.ConvertToCSR();  
+  ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
+  ls.SetNVectors(defvex_perdirec);
+  ls.SetZlssd(setlssd);
+  mat.ConvertToCSR();  
  #endif
    
    ls.SetOperator(mat);
@@ -161,15 +159,23 @@ int main(int argc, char* argv[]) {
    
   
    ls.Init(0.0, 1e-6, 1e8, 200000);
+   
  #ifdef BUBFLO  	
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
-   if(setlssd)
+  if(setlssd)
      ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available	
  #endif
      
-   
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
+#endif 
+  
  
    ls.Build();
+
  #ifdef MATDIA  
    mat.ConvertToDIA();
  #endif  
@@ -206,17 +212,22 @@ int main(int argc, char* argv[]) {
    cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
  #endif  
    //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
+   mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
   /////////////////////////////////////////////////////////////////  
  
-  /////////////////////////////////////////////////////////////////  
+  ///////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver FSAI" << std::endl;
-  refones.Ones();
+  
 #ifdef GUUS  
   rhs.ReadFileASCII(std::string(argv[3]));
   x.SetRandom(0.0,1.0,1000);
   ls.SetZ(Zin);
+  refones.Ones();
 #endif
 
   
@@ -244,7 +255,10 @@ int main(int argc, char* argv[]) {
     phi.Clear();
     
   }
-  ls.Setxdim(xdim);
+   ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
   mat.ConvertToCSR();  
@@ -253,24 +267,26 @@ int main(int argc, char* argv[]) {
   
   ls.SetOperator(mat);
   ls.SetPreconditioner (fsai_p) ;
-  fsai_p.SetPrecondMatrixFormat(HYB);
+//   fsai_p.SetPrecondMatrixFormat(HYB);
   
  
   ls.Init(0.0, 1e-6, 1e8, 200000);
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif  
-  
+
+
   
 #ifdef BUBFLO  
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
   if(setlssd)
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
 #endif  
-  
 
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
+#endif  
+  
   ls.Build();
 #ifdef MATDIA  
   mat.ConvertToDIA();
@@ -309,17 +325,22 @@ int main(int argc, char* argv[]) {
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
 #endif  
   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
+  mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
-// //   
+//   
   
 ///////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ILU-p" << std::endl;
-  refones.Ones();
+  
 #ifdef GUUS  
   rhs.ReadFileASCII(std::string(argv[3]));
   x.SetRandom(0.0,1.0,1000);
   ls.SetZ(Zin);
+  refones.Ones();
 #endif
   
 #ifdef BUBFLO  
@@ -346,7 +367,10 @@ int main(int argc, char* argv[]) {
     phi.Clear();
     
   }
-  ls.Setxdim(xdim);
+    ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
   mat.ConvertToCSR();  
@@ -357,18 +381,22 @@ int main(int argc, char* argv[]) {
   ls.SetPreconditioner(ilu_p);
   ls.Init(0.0, 1e-6, 1e8, 20000);
   ls.RecordResidualHistory();
-//  mat.ConvertToCSR();  
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif  
+
+
 
 #ifdef BUBFLO  
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
   if(setlssd)
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
 #endif  
+    
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
+#endif  
+  
   ls.Build();
 #ifdef MATDIA  
   mat.ConvertToDIA();
@@ -379,7 +407,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Building:" << b << " sec" << std::endl;
   
   //ls.Verbose(2);
-  
+  mat.info();  
   gettimeofday(&now, NULL);
   tick = now.tv_sec*1000000.0+(now.tv_usec);
   
@@ -410,17 +438,21 @@ int main(int argc, char* argv[]) {
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
 #endif  
-  
+  mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
   
 /////////////////////////////////////////////////////////////////
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ME-ILU-J" << std::endl;
-  refones.Ones();
+  
 #ifdef GUUS  
   rhs.ReadFileASCII(std::string(argv[3]));
   x.SetRandom(0.0,1.0,1000);
   ls.SetZ(Zin);
+  refones.Ones();
 #endif  
 
 #ifdef BUBFLO
@@ -446,7 +478,10 @@ int main(int argc, char* argv[]) {
     phi.Clear();
     
   }
-  ls.Setxdim(xdim);
+    ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
   mat.ConvertToCSR();
@@ -460,18 +495,20 @@ int main(int argc, char* argv[]) {
   
   
   ls.Init(0.0, 1e-6, 1e8, 200000);
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif  
   
 #ifdef BUBFLO  
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
   if(setlssd)
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
 #endif  
-  
+
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
+#endif      
+    
   ls.Build();
 #ifdef MATDIA  
   mat.ConvertToDIA();
@@ -509,16 +546,21 @@ int main(int argc, char* argv[]) {
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
 #endif  
   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
+  mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
 
 ///////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ME-ILU-SGS" << std::endl;
-  refones.Ones();
+  
 #ifdef GUUS  
   rhs.ReadFileASCII(std::string(argv[3]));
   x.SetRandom(0.0,1.0,1000);
   ls.SetZ(Zin);
+  refones.Ones();
 #endif
   
 #ifdef BUBFLO  
@@ -545,7 +587,10 @@ int main(int argc, char* argv[]) {
     phi.Clear();
     
   }
-  ls.Setxdim(xdim);
+    ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
   mat.ConvertToCSR();  
@@ -555,17 +600,19 @@ int main(int argc, char* argv[]) {
   ls.SetPreconditioner(mcsgs_p);
 
   ls.Init(0.0, 1e-6, 1e8, 200000);
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif  
+
 #ifdef BUBFLO  
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
   if(setlssd)
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
 #endif
     
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
+#endif  
   
   ls.Build();
 #ifdef MATDIA  
@@ -604,6 +651,10 @@ x.MoveToHost();
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
 #endif  
   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
+  mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
 // 
 // /////////////////////////////////////////////////////////////////  
@@ -611,11 +662,12 @@ x.MoveToHost();
 // /////////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ME-ILU-ILU(0,1)" << std::endl;
-  refones.Ones();
+  
 #ifdef GUUS  
   rhs.ReadFileASCII(std::string(argv[3]));
   x.SetRandom(0.0,1.0,1000);
   ls.SetZ(Zin);
+  refones.Ones();
 #endif
 #ifdef BUBFLO  
   x.ReadFileASCII(std::string(argv[2]));
@@ -641,7 +693,10 @@ x.MoveToHost();
     phi.Clear();
     
   }
-  ls.Setxdim(xdim);
+    ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
   mat.ConvertToCSR();    
@@ -656,11 +711,7 @@ x.MoveToHost();
   ls.SetPreconditioner(p);
 //   p.SetPrecondMatrixFormat(HYB);
   ls.Init(0.0, 1e-6, 1e8, 200000);
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif  
+
   #ifdef BUBFLO  
 //   ls.SetNVectors(4);
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
@@ -668,7 +719,12 @@ x.MoveToHost();
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
 #endif    
 //   
-  
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
+#endif    
   ls.Build();
 #ifdef MATDIA  
   mat.ConvertToDIA();
@@ -706,16 +762,21 @@ x.MoveToHost();
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
 #endif  
+  mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
 
 // /////////////////////////////////////////////////////////////////    
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ILU(0,1)" << std::endl;
-  refones.Ones();
+  
 #ifdef GUUS  
   rhs.ReadFileASCII(std::string(argv[3]));
   x.SetRandom(0.0,1.0,1000);
   ls.SetZ(Zin);
+  refones.Ones();
 #endif  
   gettimeofday(&now, NULL);
   tick = now.tv_sec*1000000.0+(now.tv_usec);
@@ -738,7 +799,10 @@ x.MoveToHost();
     phi.Clear();
     
   }
-  ls.Setxdim(xdim);
+    ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
   mat.ConvertToCSR();
@@ -749,18 +813,19 @@ x.MoveToHost();
   ls.SetPreconditioner(mcilu_p);
   
   ls.Init(0.0, 1e-6, 1e8, 200000);
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif  
+
 #ifdef BUBFLO  
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
   if(setlssd)
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available	
 #endif
     
-  
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
+#endif    
   ls.Build();
 #ifdef MATDIA  
   mat.ConvertToDIA();
@@ -797,18 +862,23 @@ x.MoveToHost();
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Reference is "<<((double)diff_norm/(double)sol_norm)<<endl;
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
 //   x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
-#endif  
+#endif 
+  mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
 /////////////////////////////////////////////////////////////////    
   
 // /////////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver jacobi" << std::endl;
-  refones.Ones();
+  
 #ifdef GUUS  
   rhs.ReadFileASCII(std::string(argv[3]));
   x.SetRandom(0.0,1.0,1000);
   ls.SetZ(Zin);
+  refones.Ones();
 #endif
 #ifdef BUBFLO  
   x.ReadFileASCII(std::string(argv[2]));
@@ -834,7 +904,10 @@ x.MoveToHost();
     phi.Clear();
     
   }
-  ls.Setxdim(xdim);
+    ls.Setxdim(xdim);
+  ls.SetNVectors_eachdirec(defvex_perdirec, defvex_perdirec, defvex_perdirec);
+  ls.Set_alldims(xdim, xdim, xdim);
+  ls.Setlvst_offst(lvst_offst);
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
   mat.ConvertToCSR();    
@@ -845,19 +918,20 @@ x.MoveToHost();
   ls.SetPreconditioner(j_p);
 //   p.SetPrecondMatrixFormat(HYB);
   ls.Init(0.0, 1e-6, 1e8, 200000);
-#ifdef GPURUN  
-  mat.MoveToAccelerator();
-  x.MoveToAccelerator();
-  rhs.MoveToAccelerator();
-#endif    
+
 #ifdef BUBFLO  
 //   ls.SetNVectors(4);
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
   if(setlssd)
     ls.MakeZLSSD(bubmap_ptr, maxbmap); // bubmap must be ready and maxbmap available
+#endif  
+    
+#ifdef GPURUN  
+  mat.MoveToAccelerator();
+  x.MoveToAccelerator();
+  rhs.MoveToAccelerator();
+  ls.MoveToAccelerator();
 #endif    
-//   
-  
   ls.Build();
 #ifdef MATDIA  
   mat.ConvertToDIA();
@@ -895,6 +969,10 @@ x.MoveToHost();
   cout<<"\n Relative Norm of Calculated Solution w.r.t. Ones is "<<((double)ones_norm/(double)sol_norm)<<endl;
   //x.WriteFileASCII("x_solution1e3shell_ilu01.rec");
 #endif  
+  mat.MoveToHost();
+  x.MoveToHost();
+  rhs.MoveToHost();
+  ls.MoveToHost();
   ls.Clear();
 //   
   cout<<"########################################################################"<<endl;

@@ -573,29 +573,29 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
  
   numbub_pervec= new int[col_ctr*(maxbmap+1)]; 
 
-  omp_set_num_threads(omp_get_max_threads());
-#pragma omp parallel
-  {  
+//   omp_set_num_threads(omp_get_max_threads());
+// #pragma omp parallel
+//   {  
     
-#pragma omp for
+// #pragma omp for
   for(j=0;j<col_ctr*(maxbmap+1);j++)
     numbub_pervec[j]=0;
-  }
+//   }
   //calculate which levels in bmap exist in which vectors.
   // can be more than one level per vector or none
-omp_set_num_threads(omp_get_max_threads());
-#pragma omp parallel
-  {  
+// omp_set_num_threads(omp_get_max_threads());
+// #pragma omp parallel
+//   {  
     
 //     printf("\n Number of threads for openMP %d", omp_get_num_threads());
-#pragma omp for    
+// #pragma omp for    
   for(j=0;j<dim;j++)
     if(bmap[j]>0)
 	{
 	 vec_num=get_vecnum(j, xdim_, ydim_, zdim_, novecni_x_, novecni_y_, novecni_z_);
 	 numbub_pervec[vec_num*(maxbmap+1)+bmap[j]-1]++;
 	}
-  }
+//   }
  // Assign each level in each vector a number in increasing order starting from 1.
  // This helps in counting how many levels per vector are there so the columns
  // can be added serially.
@@ -825,29 +825,29 @@ void DPCG<OperatorType, VectorType, ValueType>::Clear(void) {
     
     this->iter_ctrl_.Clear();
     
-    /*this->Z_.info(); 
-    this->E_.info();
-    this->op_->info();
+//     this->Z_.info(); 
+//     this->E_.info();
+//     this->op_->info();
+//     
+//     this->r_.info();
+//     this->w_.info();
+//     this->p_.info();
+//     this->q_.info();
+//    
+//     this->hat_.info();
+//     this->intmed_.info();
+//     this->Qb_.info();
+//     this->Ptx_.info();
+//     
+//     this->ZT_.info();
+//     this->AZ_.info();
+//     this->AZT_.info();
+//       this->Dinv_.info();
+//       this->LLtx_.info();
+//       this->LLtx2_.info();
+//       this->L_.info();
+//       this->LT_.info();
     
-    this->r_.info();
-    this->w_.info();
-    this->p_.info();
-    this->q_.info();
-   
-    this->hat_.info();
-    this->intmed_.info();
-    this->Qb_.info();
-    this->Ptx_.info();
-    
-    this->ZT_.info();
-    this->AZ_.info();
-    this->AZT_.info();
-      this->Dinv_.info();
-      this->LLtx_.info();
-      this->LLtx2_.info();
-      this->L_.info();
-      this->LT_.info();
-    */
     this->build_ = false;
   }
 
