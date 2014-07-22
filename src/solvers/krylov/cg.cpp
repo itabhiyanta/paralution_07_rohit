@@ -350,9 +350,12 @@ void CG<OperatorType, VectorType, ValueType>::SolvePrecond_(const VectorType &rh
   // initial residual norm
 
   // use for |b-Ax0|
-  ValueType res_norm;
+  ValueType res_norm, b_norm;
   res_norm = this->Norm(*r) ;
-  this->iter_ctrl_.InitResidual(res_norm);
+  b_norm = this->Norm(rhs);
+ 
+
+  this->iter_ctrl_.InitResidual(b_norm);
 
   // use for |b|
   //  this->iter_ctrl_.InitResidual(rhs.Norm());

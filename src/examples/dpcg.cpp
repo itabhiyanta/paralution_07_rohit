@@ -125,14 +125,12 @@ int main(int argc, char* argv[]) {
   ls.SetNVectors(defvex_perdirec);
   ls.SetZlssd(setlssd);
 #endif  
-  gettimeofday(&now, NULL);
-  tack = now.tv_sec*1000000.0+(now.tv_usec);
-  lprep=(tack-tick)/1000000;
-  std::cout << "levelset_prep" << lprep << " sec" << std::endl;
+//   gettimeofday(&now, NULL);
+//   tack = now.tv_sec*1000000.0+(now.tv_usec);
+//   lprep=(tack-tick)/1000000;
+//   std::cout << "levelset_prep" << lprep << " sec" << std::endl;
   // Linear Solver
 //   return 0;
-  gettimeofday(&now, NULL);
-  tick = now.tv_sec*1000000.0+(now.tv_usec);
  
 #ifdef SCALIN
   
