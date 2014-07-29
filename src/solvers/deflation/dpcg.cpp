@@ -714,9 +714,9 @@ void DPCG<OperatorType, VectorType, ValueType>::Build(void) {
 
     this->LT_.CopyFrom(this->L_);
     this->LT_.Transpose();
-    
+/*    
     this->L_.ConvertToDIA();
-    this->LT_.ConvertToDIA();
+    this->LT_.ConvertToDIA();*/
   }
   this->w_.CloneBackend(*this->op_);
   this->w_.Allocate("w", this->op_->get_nrow());

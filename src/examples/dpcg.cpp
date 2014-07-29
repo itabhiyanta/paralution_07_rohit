@@ -27,11 +27,11 @@
 using namespace std;
 using namespace paralution;
 
-// #define GUUS
+#define GUUS
 // #define SCALIN
-#define GPURUN
-#define BUBFLO
-#define MATDIA
+// #define GPURUN
+// #define BUBFLO
+// #define MATDIA
 int main(int argc, char* argv[]) {
 
   if (argc == 1) { 
@@ -203,9 +203,9 @@ int main(int argc, char* argv[]) {
 #ifdef GUUS  
 //   x.WriteFileASCII("x_solution_shell_inv_neumann.rec");
   //ls.RecordHistory("res__ongpu_tns.rec");
-  x.MoveToHost();
-  x.WriteFileASCII("x_neumann.rec");
-  x.MoveToAccelerator();
+//   x.MoveToHost();
+//   x.WriteFileASCII("x_neumann.rec");
+//   x.MoveToAccelerator();
   sol_norm=x.Norm();
   mat.Apply(x, &chk_r); 
   chk_r.ScaleAdd(double(-1.0), rhs);

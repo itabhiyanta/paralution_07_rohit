@@ -25,11 +25,11 @@
 
 #include <paralution.hpp>
 
-#define GPURUN	4
-#define MATDIA	1
+// #define GPURUN	4
+// #define MATDIA	1
 // #define SCALIN	55
-// #define GUUS	2
-#define	BUBFLO	3
+#define GUUS	2
+// #define	BUBFLO	3
 using namespace std;
 using namespace paralution;
 
@@ -155,10 +155,10 @@ int main(int argc, char* argv[]) {
    
    ls.SetOperator(mat);
    ls.SetPreconditioner (mcsgs_p) ;
-   mcsgs_p.SetPrecondMatrixFormat(HYB);
+//    mcsgs_p.SetPrecondMatrixFormat(HYB);
    
   
-   ls.Init(0.0, 1e-6, 1e8, 200000);
+//    ls.Init(0.0, 1e-6, 1e8, 200000);
    
  #ifdef BUBFLO  	
   ls.MakeZ_CSR(); // requires xdim_ and novecni_ and zlssd_ to be set
@@ -332,7 +332,7 @@ int main(int argc, char* argv[]) {
   ls.Clear();
 //   
   
-///////////////////////////////////////////////////////////////  
+/////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ILU-p" << std::endl;
   
@@ -379,7 +379,7 @@ int main(int argc, char* argv[]) {
   ilu_p.Set(0);
   ls.SetOperator(mat);
   ls.SetPreconditioner(ilu_p);
-  ls.Init(0.0, 1e-6, 1e8, 20000);
+  ls.Init(0.0, 1e-6, 1e8, 200000);
   ls.RecordResidualHistory();
 
 
@@ -444,7 +444,7 @@ int main(int argc, char* argv[]) {
   ls.MoveToHost();
   ls.Clear();
   
-/////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ME-ILU-J" << std::endl;
   
@@ -656,10 +656,10 @@ x.MoveToHost();
   rhs.MoveToHost();
   ls.MoveToHost();
   ls.Clear();
-// 
-// /////////////////////////////////////////////////////////////////  
-//   
-// /////////////////////////////////////////////////////////////////  
+
+/////////////////////////////////////////////////////////////////  
+  
+/////////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;
   std::cout << "DPCG solver ME-ILU-ILU(0,1)" << std::endl;
   
@@ -868,7 +868,7 @@ x.MoveToHost();
   rhs.MoveToHost();
   ls.MoveToHost();
   ls.Clear();
-/////////////////////////////////////////////////////////////////    
+///////////////////////////////////////////////////////////////    
   
 // /////////////////////////////////////////////////////////////////  
   std::cout << "-----------------------------------------------" << std::endl;

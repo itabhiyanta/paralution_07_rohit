@@ -2,13 +2,16 @@
 #$ -pe openmpi 1 
 #$ -l h_rt=2:15:00
 #$ -l fat,gpu=K20
-#$ -N pdpcg_ongpu_1289bub_all_22jul
+#$ -N ppcg_oncpu_shell_neumann_24jul
 #$ -cwd
 
-APP=./dpcg_precon
+APP=./dpcg
 #ARGS=" A x b phi openMP_threads xdim ydim zdim lssd_vex_flag defvex_x defvex_y defvex_z levelset_ghost_points
-ARGS="/var/scratch/rgupta/dimitar_tsts_dec2013/AC128_9bub_lssd.mtx  /var/scratch/rgupta/dimitar_tsts_dec2013/x_readin128_9bub_lssd.rec /var/scratch/rgupta/dimitar_tsts_dec2013/b_readin128_9bub_lssd.rec /var/scratch/rgupta/dimitar_tsts_dec2013/phi_readin128_9bub_lssd.rec 128 1 4 2"
+# ARGS="/var/scratch/rgupta/dimitar_tsts_dec2013/AC128_9bub_lssd_eps1e-5.mtx  /var/scratch/rgupta/dimitar_tsts_dec2013/x_readin128_9bub_lssd_eps1e-5.rec /var/scratch/rgupta/dimitar_tsts_dec2013/b_readin128_9bub_lssd_eps1e-5.rec /var/scratch/rgupta/dimitar_tsts_dec2013/phi_readin128_9bub_lssd_eps1e-5.rec 128 1 2 2"
 # ARGS="../../../convert_coo_to_mm/a_63_16_1e7.mtx ../../../convert_coo_to_mm/Z_63_16_1e7.mtx ../../../convert_coo_to_mm/r_63_16_1e7.dat 8"
+ARGS="/var/scratch/rgupta/guus_data/a_shell_norm1e6_16.mtx /var/scratch/rgupta/guus_data/Z_shell_norm1e6_16.mtx /var/scratch/rgupta/guus_data/r_shell_norm1e6_16.dat /var/scratch/rgupta/guus_data/sol_shell_norm1e6_16.dat 8"
+# ARGS="/var/scratch/rgupta/guus_data/a_skwd_lyrs15_z01_1e_5.mtx /var/scratch/rgupta/guus_data/Z_skwd_lyrs15_z01_1e_5.mtx /var/scratch/rgupta/guus_data/r_skwd_lyrs15_z01_1e_5.dat /var/scratch/rgupta/guus_data/sol_skwd_lyrs15_z01_1e_5.dat 8"
+# ARGS="/var/scratch/rgupta/guus_data/a_layers15_1e6.mtx /var/scratch/rgupta/guus_data/Z_layers15_1e6.mtx /var/scratch/rgupta/guus_data/r_layers15_1e6.dat /var/scratch/rgupta/guus_data/sol_layers15_1e6.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_shell_inv.mtx /var/scratch/rgupta/guus_data/Z_shell_inv.mtx /var/scratch/rgupta/guus_data/r_shell_inv.dat /var/scratch/rgupta/guus_data/sol_shell_inv.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_shell_norm.mtx /var/scratch/rgupta/guus_data/Z_shell_norm.mtx /var/scratch/rgupta/guus_data/r_shell_norm.dat /var/scratch/rgupta/guus_data/sol_shell_norm.dat 8"
 #ARGS="/var/scratch/rgupta/guus_data/a_9lyrd_1e6_31.mtx /var/scratch/rgupta/guus_data/Z_9lyrd_1e6_31.mtx /var/scratch/rgupta/guus_data/r_9lyrd_1e6_31.dat /var/scratch/rgupta/guus_data/sol_9lyrd_1e6_31.dat 8"
