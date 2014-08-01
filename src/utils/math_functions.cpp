@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "omp.h"
+#include "allocate_free.hpp"
 using namespace std;
 namespace paralution {
 
@@ -59,7 +60,8 @@ int makew1w2(int *bubmap, int *rowsZ, int *colsZ, int *rowsZ_w1, int *colsZ_w1, 
   int rowid, col_ctr, new_col_value, w2cols, nnzw1, nnzw2, w1cols=0, rem_frm_w2, i, j, k;
   double dproduct; //FILE *fp;char name[20];
   double *complement_bmap; 
-  complement_bmap=(double*)calloc(dim,sizeof(double));
+  //complement_bmap=(double*)calloc(dim,sizeof(double));
+  complement_bmap = new double [dim];
   nnzw2=0;
   /// Now make levelset(bubmap) vector for subdomains(bubble only). Inverse of that is levelset(bubmap) matrix for(no bubbles).
   domsize=s*s*s;  griddiminx=xdim/s; gridarea2d=griddiminx*griddiminx; domarea2d=s*s;
@@ -135,7 +137,8 @@ fclose(fp);  */
   w1cols=w1cols+1;
   
   *w1col=w1cols; *w2col=w2cols; *nzw1=nnzw1; *nzw2=nnzw2; *r_frm_w2=rem_frm_w2;
-  free(complement_bmap);
+  //free(complement_bmap);
+  delete [] complement_bmap;
   return 0;
 }
 
@@ -145,7 +148,7 @@ int bubmap_create(const double *phi, int *bubmap, const int xdim, const int ydim
   //FILE *fp;  int i;
   makebubmap(xdim, ydim, zdim, dim, phi, bubmap, 0, lvst_offst);
   *maxbmap=fixbubmap(bubmap, xdim, dim);
-  printf("\n maxbmap is %d",*maxbmap);
+//   printf("\n maxbmap is %d",*maxbmap);
 //   fp=fopen("bubmap_par_128_9bub.rec","wt");
 //   for(i=0;i<dim;i++)
 //     fprintf(fp,"%d \n",bubmap[i]);
@@ -159,13 +162,19 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 	       const double *phi, int *bubmap, const int extension, const int lvst_offst)
 {
     int j,k;
-    int decide, phin_x, phin_y, phin_z, *submap, *all_nayburs; //char name[20];
+    int decide, phin_x, phin_y, phin_z, *submap=NULL, *all_nayburs=NULL; //char name[20];
 //    int max_threads, num_procs;
 //     FILE *fp;
-    double *phimap;
-    submap	=(int*)calloc(dim,sizeof(int));
-    phimap	=(double*)calloc(dim,sizeof(double));
-    all_nayburs	=(int*)calloc(dim*3,sizeof(int));
+    double *phimap=NULL;
+    //submap	=(int*)calloc(dim,sizeof(int));
+//     submap	= new int [dim];
+    allocate_host(dim, &submap);
+    //phimap	=(double*)calloc(dim,sizeof(double));
+//     phimap	= new double [dim];
+    allocate_host(dim, &phimap);
+    //all_nayburs	=(int*)calloc(dim*3,sizeof(int));
+//     all_nayburs	= new int [dim*3];
+    allocate_host(dim*3, &all_nayburs);
     
     phin_x=xdim+2*lvst_offst;	phin_y=ydim+2*lvst_offst;	phin_z=zdim+2*lvst_offst;
     j=lvst_offst*phin_y*phin_z+lvst_offst*phin_z+lvst_offst;
@@ -196,7 +205,7 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 //     printf("\n Number of thread for openMP inside makebubmap are %d. max_threads are %d. num_procs %d", omp_get_num_threads(), max_threads, num_procs);
 //     omp_set_num_threads(8);
 //     printf("\n Number of thread for openMP inside makebubmap are now %d", omp_get_num_threads());
-    omp_set_num_threads(omp_get_max_threads());
+//     omp_set_num_threads(omp_get_max_threads());
 // #pragma omp parallel
 //     {
       
@@ -291,8 +300,9 @@ int makebubmap(const int xdim, const int ydim, const int zdim, const int dim,
 //   }
   
 
-  free(phimap);	free(all_nayburs);  free(submap);
-  
+//   free(phimap);	free(all_nayburs);  free(submap);
+//   delete [] phimap;	delete [] all_nayburs; delete [] submap;
+  free_host(&submap);	free_host(&phimap);	free_host(&all_nayburs);
   return 0;
 }
 
@@ -354,8 +364,10 @@ int top(const int coord, const int dim, const int vec_indim) {
 }
 int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 {
-  int storectr, index, *store; char maxbmap;//name[20], 
-  store=(int*)calloc(maxnumbubs,sizeof(int));
+  int storectr, index, *store=NULL; char maxbmap;//name[20], 
+  //store=(int*)calloc(maxnumbubs,sizeof(int));
+//   store = new int [maxnumbubs];
+  allocate_host(maxnumbubs,&store);
 //   FILE *fp;
   //memset(store,0,sizeof(int)*maxnumbubs);//setting to zeros
 //   omp_set_num_threads(omp_get_max_threads());
@@ -399,7 +411,9 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 // for(i=0;i<dim;i++)
 //   fprintf(fp,"%d \n",bubmap[i]);
 // fclose(fp);  
-  free(store);
+//   free(store);
+//   delete [] store;
+  free_host(&store);
   //maxbmap=index+1;
   maxbmap=storectr;
   return maxbmap;
@@ -409,9 +423,11 @@ int fixbubmap(int *bubmap, int maxnumbubs, int dim)
 
 int calclvlstval(int left, int bottom, int leftface, int inj, double *phimap, int *bubmap, int i, int decide, int dim)
 {
-  int *valarray;
+  int *valarray=NULL;
   int minval, retval=0;  
-  valarray= (int*)calloc(3,sizeof(int));
+  //valarray= (int*)calloc(3,sizeof(int));
+//   valarray = new int [3];
+  allocate_host(3,&valarray);
   valarray[0]=9999999; valarray[1]=9999999;valarray[2]=9999999;
   if ( (left>=0) && (left<dim))
     if((phimap[left]>=0.0) ) // valid point and part of bub/intfc
@@ -435,7 +451,8 @@ int calclvlstval(int left, int bottom, int leftface, int inj, double *phimap, in
   }
   else {bubmap[i]=minval;	retval=inj; }
 
-  free(valarray);
+//   delete [] valarray;
+free_host(&valarray);
   return retval;
 }
 void swap_int(int *in1, int *in2, int *tmp)

@@ -547,8 +547,10 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
  // }  
 //   cout<<"Number of non-zeros in w1 "<<nnz_w1<<" and in w2 is "<<nnz_w2<<" respectively."<<" Sum is ="<<nnz_w1+nnz_w2<<"."<<endl;
   //Allocating space for Z_lssd
-  Zlssd_rows=new int[nnz_w1+nnz_w2];	Zlssd_cols=new int[nnz_w1+nnz_w2];
-  Zlssd_vals= new ValueType[nnz_w1+nnz_w2];
+  //Zlssd_rows=new int[nnz_w1+nnz_w2];	Zlssd_cols=new int[nnz_w1+nnz_w2];
+  //Zlssd_vals= new ValueType[nnz_w1+nnz_w2];
+    allocate_host(nnz_w1+nnz_w2, &Zlssd_rows);	allocate_host(nnz_w1+nnz_w2, &Zlssd_cols);
+    allocate_host(nnz_w1+nnz_w2, &Zlssd_vals);
   // use w1, w2 and Z_CSR_subdomain to generate Z_COO_LSSD
 // #pragma omp parallel
 //   {  
@@ -571,8 +573,8 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
 //  cout<<"Number of columns from w1 is "<<col_ctr<<". Entries added for w1 ="<<j<<"."<<endl;
   save_idx=j;// saving the index from the last set of vectors
  
-  numbub_pervec= new int[col_ctr*(maxbmap+1)]; 
-
+//   numbub_pervec= new int[col_ctr*(maxbmap+1)]; 
+    allocate_host(col_ctr*(maxbmap+1), &numbub_pervec);
 //   omp_set_num_threads(omp_get_max_threads());
 // #pragma omp parallel
 //   {  
@@ -657,12 +659,13 @@ void DPCG<OperatorType, VectorType, ValueType>::MakeZLSSD(const int *bmap, const
        }
   
 //   printf("\n non-zeros removed are %d. originally were %d. Setting cols=%d",rem_frm_w2, nnz_w1+nnz_w2, totalmax);  
-  this->Z_.Clear();
+//   this->Z_.Clear();
   this->Z_.SetDataPtrCOO(&Zlssd_rows, &Zlssd_cols, &Zlssd_vals, "Zlssd", nnz_w1+nnz_w2-rem_frm_w2, this->op_->get_nrow(),totalmax);
   
   this->Z_.ConvertToCSR();
 
-  delete [] numbub_pervec;
+//   delete [] numbub_pervec;
+  free_host(&numbub_pervec);	free_host(&Zsubd_rows);	free_host(&Zsubd_cols);	free_host(&Zsubd_vals);
 }
 template <class OperatorType, class VectorType, typename ValueType>
 void DPCG<OperatorType, VectorType, ValueType>::Build(void) {
