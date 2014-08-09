@@ -144,17 +144,21 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Build(void) {
   this->Dinv_.CloneBackend(*this->op_);  
   this->op_->ExtractInverseDiagonal(&this->Dinv_);
   
-  this->ls_inner_.Init(0,1e-6,1e8,2000);
+  this->ls_inner_.Init(0,1e-3,1e8,2000);
 
   
   this->A0_.CloneBackend(*this->op_);
   
-  ILU<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType > *ilu_p;
-  ilu_p = new ILU<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType >;
-
+  //AMG<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType > *amg_p;
+   ILU<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType > *ilu_p;
+   ilu_p = new ILU<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType >;
+//  amg_p	=	new	AMG<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType >;
+  
   ilu_p->Set(0);
+//  amg_p->InitMaxIter(2);
 
-  this->precond_inner_ = ilu_p;  
+   this->precond_inner_ = ilu_p;  
+//  this->precond_inner_ = amg_p;
 
   this->ls_inner_.SetPreconditioner(*this->precond_inner_);  
   this->ls_inner_.SetOperator(this->A0_);

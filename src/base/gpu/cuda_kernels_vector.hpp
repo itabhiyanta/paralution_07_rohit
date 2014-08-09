@@ -54,8 +54,8 @@ __global__ void kernel_multiply_with_Rt(const IndexType n, const int m, ValueTyp
   IndexType ind = blockIdx.x * blockDim.x + threadIdx.x;
 
   if (ind < n)
-    ind%m==0?out[ind]=in[ind/m]:out[ind]=(ValueType)0.0f;//outvec[ind]=invec[ind*m];
-
+   // ind%m==0?out[ind]=in[ind/m]:out[ind]=(ValueType)0.0f;//outvec[ind]=invec[ind*m];
+   out[ind*m]=in[ind];
 }
 
 template <typename ValueType, typename IndexType>

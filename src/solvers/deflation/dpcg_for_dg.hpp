@@ -2,6 +2,7 @@
 #define PARALUTION_DEFLATION_DPCG_FOR_DG_HPP_
 #include "../solver.hpp"
 #include "../krylov/cg.hpp"
+#include "../multigrid/multigrid_amg.hpp"
 // #include <paralution.hpp>
 namespace paralution {
 
