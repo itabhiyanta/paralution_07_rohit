@@ -163,9 +163,9 @@ int main(int argc, char* argv[]) {
   x.MoveToAccelerator();
   rhs.MoveToAccelerator();
   chk_r.MoveToAccelerator();
-  Dinvhalf_min.MoveToAccelerator();
-  Dinvhalf_plus.MoveToAccelerator();
-  
+//   Dinvhalf_min.MoveToAccelerator();
+//   Dinvhalf_plus.MoveToAccelerator();
+//   
 #endif  
   
   ls.Build();

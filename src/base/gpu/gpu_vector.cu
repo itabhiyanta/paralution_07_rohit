@@ -656,7 +656,8 @@ void GPUAcceleratorVector<ValueType>::multiply_with_Rt( BaseVector<ValueType> &x
      GPUAcceleratorVector<ValueType> *cast_x = dynamic_cast< GPUAcceleratorVector<ValueType>*> (&x);
     assert(cast_x != NULL);
 
-    int size = x.get_size(); // calling for the size of the output vector
+    //int size = x.get_size(); // calling for the size of the output vector
+    int size = this->get_size(); // calling for the size of the output vector
     dim3 BlockSize(this->local_backend_.GPU_block_size);
     dim3 GridSize(size / this->local_backend_.GPU_block_size + 1);
     
