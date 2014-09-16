@@ -188,10 +188,10 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Build(void) {
 
   this->ls_inner_.SetOperator(this->A0_);  
   
-//   this->RT_.CopyFrom(this->R_);
-//   this->RT_.Transpose();
-//   this->R_.CloneBackend(*this->op_);
-//   this->RT_.CloneBackend(*this->op_);
+  this->RT_.CopyFrom(this->R_);
+  this->RT_.Transpose();
+  this->R_.CloneBackend(*this->op_);
+  this->RT_.CloneBackend(*this->op_);
 #ifdef ILU_PREC_INNR
   ILU<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType > *ilu_p;
   ilu_p = new ILU<LocalMatrix<ValueType>, LocalVector<ValueType>, ValueType >;
@@ -249,8 +249,8 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::Clear(void) {
     this->Qb_.Clear();
     this->Ptx_.Clear();
     this->Dinv_.Clear();
-//     this->R_.Clear();
-//     this->RT_.Clear();
+    this->R_.Clear();
+    this->RT_.Clear();
     this->A0_.Clear();
     this->ls_inner_.Clear();
     this->iter_ctrl_.Clear();
@@ -282,8 +282,8 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToHostLocalData_(void
     this->Qb_.MoveToHost();
     this->Ptx_.MoveToHost();
     this->Dinv_.MoveToHost();
-//     this->R_.MoveToHost();
-//     this->RT_.MoveToHost();
+    this->R_.MoveToHost();
+    this->RT_.MoveToHost();
     this->ls_inner_.MoveToHost();
     if (this->precond_ != NULL)
       this->precond_->MoveToHost();
@@ -311,9 +311,9 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::MoveToAcceleratorLocalDat
     this->Qb_.MoveToAccelerator();
     this->Ptx_.MoveToAccelerator();
     this->Dinv_.MoveToAccelerator();
-  /*  this->R_.MoveToAccelerator();
+    this->R_.MoveToAccelerator();
     this->RT_.MoveToAccelerator();
-  */  
+    
     if (this->precond_ != NULL)
       this->precond_->MoveToAccelerator();
     this->ls_inner_.MoveToAccelerator();
@@ -351,8 +351,8 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    VectorType *Qb = &this->Qb_;
    VectorType *Ptx = &this->Ptx_;
 
-//    OperatorType *R = &this->R_;
-//    OperatorType *RT = &this->RT_;
+   OperatorType *R = &this->R_;
+   OperatorType *RT = &this->RT_;
    
    ValueType beta, alpha;
    ValueType rho, rho_old;
@@ -365,41 +365,38 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    /*** making Qb ***/
    tick = paralution_time();
 //    rhs.multiply_with_R(*w2,m_local);
-//    R->Apply(rhs, w2);
-   w2->CopyFrom(rhs,0,0,this->A0_nrows_);
+   R->Apply(rhs, w2);
    tack = paralution_time();
    time_multR_Rt+=(tack-tick)/1000000;
-
+//    w3->Zeros();
    
    tick = paralution_time();
    this->ls_inner_.Solve(*w2, w3);
    tack = paralution_time();
    time_innrsolve+=(tack-tick)/1000000;
 //   cout<<"Norm of w3 after solve is "<<  this->Norm(*w3)<<endl; 
-
+//     w4->Zeros();
     tick = paralution_time();
 //     w3->multiply_with_Rt(*w4,m_local);
-//     RT->Apply(*w3, w4);
-    w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+    RT->Apply(*w3, w4);
     tack = paralution_time();
     time_multR_Rt+=(tack-tick)/1000000;
     
     Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
 //    /*** making Ptx ***/
     op->Apply(*x,Ptx);
+//     w2->Zeros();
 //     Ptx->multiply_with_R(*w2,m_local);
-//     R->Apply(*Ptx, w2);
-    w2->CopyFrom(*Ptx,0,0,this->A0_nrows_);
-
+    R->Apply(*Ptx, w2);
+//     w3->Zeros();
     tick = paralution_time();
     this->ls_inner_.Solve(*w2,w3);
     tack = paralution_time();
     time_innrsolve+=(tack-tick)/1000000;
-
+//     w4->Zeros();
     tick = paralution_time();
 //     w3->multiply_with_Rt(*w4,m_local);
-//     RT->Apply(*w3, w4);
-    w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+    RT->Apply(*w3, w4);
     tack = paralution_time();
     time_multR_Rt+=(tack-tick)/1000000;
     
@@ -419,23 +416,21 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
 
     op->Apply(*y,w1);
     w1->ScaleAdd((ValueType)-1.0f, *r);
-
+//     w2->Zeros();	
     tick = paralution_time();
 //     w1->multiply_with_R(*w2,m_local);
-//     R->Apply(*w1, w2);
-    w2->CopyFrom(*w1,0,0,this->A0_nrows_);
+    R->Apply(*w1, w2);
     tack = paralution_time();
     time_multR_Rt+=(tack-tick)/1000000;
-
+//     w3->Zeros();
     tick = paralution_time();
     this->ls_inner_.Solve(*w2,w3);
     tack = paralution_time();
     time_innrsolve+=(tack-tick)/1000000;
-
+//     w4->Zeros();
     tick = paralution_time();
 //     w3->multiply_with_Rt(*w4,m_local);
-//     RT->Apply(*w3, w4);
-    w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+    RT->Apply(*w3, w4);
     tack = paralution_time();
     time_multR_Rt+=(tack-tick)/1000000;
     
@@ -468,23 +463,22 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
 //     
       op->Apply(*y,w1);
       w1->ScaleAdd((ValueType)-1.0f, *r);
-
+//       w2->Zeros();	
       tack = paralution_time();
 //       w1->multiply_with_R(*w2,m_local);
-//       R->Apply(*w1, w2);
-      w2->CopyFrom(*w1,0,0,this->A0_nrows_);
+      R->Apply(*w1, w2);
       tack = paralution_time();
       time_multR_Rt+=(tack-tick)/1000000;
       
+//       w3->Zeros();
       tick = paralution_time();
       this->ls_inner_.Solve(*w2,w3);
       tack = paralution_time();
       time_innrsolve+=(tack-tick)/1000000;
-
+//       w4->Zeros();
       tick = paralution_time();
 //       w3->multiply_with_Rt(*w4,m_local);
-//       RT->Apply(*w3, w4);
-      w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+      RT->Apply(*w3, w4);
       tack = paralution_time();
       time_multR_Rt+=(tack-tick)/1000000;
       

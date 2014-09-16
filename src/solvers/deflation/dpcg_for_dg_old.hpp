@@ -10,7 +10,7 @@
 #define DPCG_INNR
 // #define ILU_PREC_INNR
 // #define AMG_PREC_INNR
-#define DEFVEX_PERDIREC	4
+#define DEFVEX_PERDIREC	16
 namespace paralution {
 
 template <class OperatorType, class VectorType, typename ValueType>
@@ -23,7 +23,6 @@ public:
   virtual void Build(void);
   virtual void Clear(void);
   virtual void SetA0_and_m(LocalMatrix<ValueType> &A0, const int);
-  virtual void MakeR_CSR(const int nrows , const int ncols, const int m);
 protected:
   virtual void SolveNonPrecond_(const VectorType &rhs,
                                 VectorType *x);
@@ -37,7 +36,7 @@ protected:
   virtual void MoveToAcceleratorLocalData_(void);
   
 private:
-  OperatorType A0_, Z_, R_ , RT_;
+  OperatorType A0_, Z_;
   VectorType r_, w_;
   VectorType p_, y_;
 

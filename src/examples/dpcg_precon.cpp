@@ -26,10 +26,10 @@
 #include <paralution.hpp>
 
 // #define GPURUN	4
-// #define MATDIA	1
+#define MATDIA	1
 // #define SCALIN	55
-#define GUUS	2
-// #define	BUBFLO	3
+// #define GUUS	2
+#define	BUBFLO	3
 using namespace std;
 using namespace paralution;
 

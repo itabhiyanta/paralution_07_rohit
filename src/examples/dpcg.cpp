@@ -27,11 +27,11 @@
 using namespace std;
 using namespace paralution;
 
-#define GUUS
+// #define GUUS
 // #define SCALIN
 // #define GPURUN
-// #define BUBFLO
-// #define MATDIA
+#define BUBFLO
+#define MATDIA
 int main(int argc, char* argv[]) {
 
   if (argc == 1) { 

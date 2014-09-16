@@ -54,6 +54,10 @@ public:
   virtual void MakeZLSSD(const int *bmap, const int);
   virtual void MakeZ_CSR(void);
   
+  virtual void MakeZ_CSR_2D(void);
+  virtual void SetNVectors_eachdirec2D(const int, const int);
+  virtual void Set_alldims2D(const int, const int);
+  
 protected:
   virtual void SolveNonPrecond_(const VectorType &rhs,
                                 VectorType *x);
