@@ -10,7 +10,7 @@
 #define DPCG_INNR
 // #define ILU_PREC_INNR
 // #define AMG_PREC_INNR
-#define DEFVEX_PERDIREC	16
+#define DEFVEX_PERDIREC	4
 namespace paralution {
 
 template <class OperatorType, class VectorType, typename ValueType>

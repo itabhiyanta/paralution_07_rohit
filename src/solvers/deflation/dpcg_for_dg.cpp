@@ -362,49 +362,49 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
    int m_local=this->m_;
   
 //    this->A0_.info();
-   /*** making Qb ***/
-   tick = paralution_time();
-//    rhs.multiply_with_R(*w2,m_local);
-//    R->Apply(rhs, w2);
-   w2->CopyFrom(rhs,0,0,this->A0_nrows_);
-   tack = paralution_time();
-   time_multR_Rt+=(tack-tick)/1000000;
-
-   
-   tick = paralution_time();
-   this->ls_inner_.Solve(*w2, w3);
-   tack = paralution_time();
-   time_innrsolve+=(tack-tick)/1000000;
-//   cout<<"Norm of w3 after solve is "<<  this->Norm(*w3)<<endl; 
-
-    tick = paralution_time();
-//     w3->multiply_with_Rt(*w4,m_local);
-//     RT->Apply(*w3, w4);
-    w4->CopyFrom(*w3,0,0,this->A0_nrows_);
-    tack = paralution_time();
-    time_multR_Rt+=(tack-tick)/1000000;
-    
-    Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
-//    /*** making Ptx ***/
-    op->Apply(*x,Ptx);
-//     Ptx->multiply_with_R(*w2,m_local);
-//     R->Apply(*Ptx, w2);
-    w2->CopyFrom(*Ptx,0,0,this->A0_nrows_);
-
-    tick = paralution_time();
-    this->ls_inner_.Solve(*w2,w3);
-    tack = paralution_time();
-    time_innrsolve+=(tack-tick)/1000000;
-
-    tick = paralution_time();
-//     w3->multiply_with_Rt(*w4,m_local);
-//     RT->Apply(*w3, w4);
-    w4->CopyFrom(*w3,0,0,this->A0_nrows_);
-    tack = paralution_time();
-    time_multR_Rt+=(tack-tick)/1000000;
-    
-    x->AddScale(*w4,(ValueType)-1.0);
-    x->ScaleAdd((ValueType)1.0, *Qb); // here we have x=Qb+(I-AQ)^{t}X 
+//    /*** making Qb ***/
+//    tick = paralution_time();
+// //    rhs.multiply_with_R(*w2,m_local);
+// //    R->Apply(rhs, w2);
+//    w2->CopyFrom(rhs,0,0,this->A0_nrows_);
+//    tack = paralution_time();
+//    time_multR_Rt+=(tack-tick)/1000000;
+// 
+//    
+//    tick = paralution_time();
+//    this->ls_inner_.Solve(*w2, w3);
+//    tack = paralution_time();
+//    time_innrsolve+=(tack-tick)/1000000;
+// //   cout<<"Norm of w3 after solve is "<<  this->Norm(*w3)<<endl; 
+// 
+//     tick = paralution_time();
+// //     w3->multiply_with_Rt(*w4,m_local);
+// //     RT->Apply(*w3, w4);
+//     w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+//     tack = paralution_time();
+//     time_multR_Rt+=(tack-tick)/1000000;
+//     
+//     Qb->CopyFrom(*w4,0,0,this->op_->get_nrow());
+// //    /*** making Ptx ***/
+//     op->Apply(*x,Ptx);
+// //     Ptx->multiply_with_R(*w2,m_local);
+// //     R->Apply(*Ptx, w2);
+//     w2->CopyFrom(*Ptx,0,0,this->A0_nrows_);
+// 
+//     tick = paralution_time();
+//     this->ls_inner_.Solve(*w2,w3);
+//     tack = paralution_time();
+//     time_innrsolve+=(tack-tick)/1000000;
+// 
+//     tick = paralution_time();
+// //     w3->multiply_with_Rt(*w4,m_local);
+// //     RT->Apply(*w3, w4);
+//     w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+//     tack = paralution_time();
+//     time_multR_Rt+=(tack-tick)/1000000;
+//     
+//     x->AddScale(*w4,(ValueType)-1.0);
+//     x->ScaleAdd((ValueType)1.0, *Qb); // here we have x=Qb+(I-AQ)^{t}X 
 //    /*** BEGINNING DPCG***/
 //    // initial residual = b - Ax
     op->Apply(*x, r); 
@@ -415,31 +415,31 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
 //    // apply deflation
     //y:=omega*M^{-1}r // omega kept as 1
 //    //y:= y + Q*(r-Ay)
-    this->precond_->SolveZeroSol(*r, y);
-
-    op->Apply(*y,w1);
-    w1->ScaleAdd((ValueType)-1.0f, *r);
-
-    tick = paralution_time();
-//     w1->multiply_with_R(*w2,m_local);
-//     R->Apply(*w1, w2);
-    w2->CopyFrom(*w1,0,0,this->A0_nrows_);
-    tack = paralution_time();
-    time_multR_Rt+=(tack-tick)/1000000;
-
-    tick = paralution_time();
-    this->ls_inner_.Solve(*w2,w3);
-    tack = paralution_time();
-    time_innrsolve+=(tack-tick)/1000000;
-
-    tick = paralution_time();
-//     w3->multiply_with_Rt(*w4,m_local);
-//     RT->Apply(*w3, w4);
-    w4->CopyFrom(*w3,0,0,this->A0_nrows_);
-    tack = paralution_time();
-    time_multR_Rt+=(tack-tick)/1000000;
-    
-    y->ScaleAdd((ValueType)1.0f,*w4);
+//     this->precond_->SolveZeroSol(*r, y);
+    y->CopyFrom(*r,0,0,this->op_->get_nrow());
+//     op->Apply(*y,w1);
+//     w1->ScaleAdd((ValueType)-1.0f, *r);
+// 
+//     tick = paralution_time();
+// //     w1->multiply_with_R(*w2,m_local);
+// //     R->Apply(*w1, w2);
+//     w2->CopyFrom(*w1,0,0,this->A0_nrows_);
+//     tack = paralution_time();
+//     time_multR_Rt+=(tack-tick)/1000000;
+// 
+//     tick = paralution_time();
+//     this->ls_inner_.Solve(*w2,w3);
+//     tack = paralution_time();
+//     time_innrsolve+=(tack-tick)/1000000;
+// 
+//     tick = paralution_time();
+// //     w3->multiply_with_Rt(*w4,m_local);
+// //     RT->Apply(*w3, w4);
+//     w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+//     tack = paralution_time();
+//     time_multR_Rt+=(tack-tick)/1000000;
+//     
+//     y->ScaleAdd((ValueType)1.0f,*w4);
     ////p=y
     p->CopyFrom(*y,0,0,this->op_->get_nrow());
 //    // initial residual for the interation control
@@ -464,31 +464,32 @@ void DPCG_FOR_DG<OperatorType, VectorType, ValueType>::SolvePrecond_(const Vecto
     while (!this->iter_ctrl_.CheckResidual(check_residual)) {
 //      //Apply deflation
 // 
-      this->precond_->SolveZeroSol(*r, y);
+//       this->precond_->SolveZeroSol(*r, y);
+      y->CopyFrom(*r,0,0,this->op_->get_nrow());
 //     
-      op->Apply(*y,w1);
-      w1->ScaleAdd((ValueType)-1.0f, *r);
-
-      tack = paralution_time();
-//       w1->multiply_with_R(*w2,m_local);
-//       R->Apply(*w1, w2);
-      w2->CopyFrom(*w1,0,0,this->A0_nrows_);
-      tack = paralution_time();
-      time_multR_Rt+=(tack-tick)/1000000;
-      
-      tick = paralution_time();
-      this->ls_inner_.Solve(*w2,w3);
-      tack = paralution_time();
-      time_innrsolve+=(tack-tick)/1000000;
-
-      tick = paralution_time();
-//       w3->multiply_with_Rt(*w4,m_local);
-//       RT->Apply(*w3, w4);
-      w4->CopyFrom(*w3,0,0,this->A0_nrows_);
-      tack = paralution_time();
-      time_multR_Rt+=(tack-tick)/1000000;
-      
-      y->ScaleAdd((ValueType)1.0f,*w4);
+//       op->Apply(*y,w1);
+//       w1->ScaleAdd((ValueType)-1.0f, *r);
+// 
+//       tack = paralution_time();
+// //       w1->multiply_with_R(*w2,m_local);
+// //       R->Apply(*w1, w2);
+//       w2->CopyFrom(*w1,0,0,this->A0_nrows_);
+//       tack = paralution_time();
+//       time_multR_Rt+=(tack-tick)/1000000;
+//       
+//       tick = paralution_time();
+//       this->ls_inner_.Solve(*w2,w3);
+//       tack = paralution_time();
+//       time_innrsolve+=(tack-tick)/1000000;
+// 
+//       tick = paralution_time();
+// //       w3->multiply_with_Rt(*w4,m_local);
+// //       RT->Apply(*w3, w4);
+//       w4->CopyFrom(*w3,0,0,this->A0_nrows_);
+//       tack = paralution_time();
+//       time_multR_Rt+=(tack-tick)/1000000;
+//       
+//       y->ScaleAdd((ValueType)1.0f,*w4);
 //      
       rho_old = rho;
 //      // rho = (r,y)
